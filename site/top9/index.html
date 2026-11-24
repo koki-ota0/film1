@@ -15,11 +15,16 @@
 .panel h2{font-size:1rem;margin:0 0 14px;color:#ddd5c8}
 .grid4{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .slot{background:#111118;border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden}
-.slot-img{aspect-ratio:2/3;background:linear-gradient(160deg,#242430,#15151c);display:grid;place-items:center;cursor:pointer;position:relative;overflow:hidden}
+.slot-img{aspect-ratio:2/3;background:linear-gradient(160deg,#242430,#15151c);display:grid;place-items:center;cursor:pointer;position:relative;overflow:hidden;user-select:none;-webkit-user-select:none}
 .slot-img img{width:100%;height:100%;object-fit:cover;display:block}
 .slot-img .ph{color:#8f887d;font-size:.82rem;text-align:center;padding:16px;line-height:1.5}
 .slot-img .ph strong{display:block;font-size:1.6rem;color:rgba(232,196,104,.7);margin-bottom:6px;font-family:var(--serif)}
 .slot-img input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.slot-img .ctrl{position:absolute;top:6px;right:6px;display:flex;gap:4px;z-index:3}
+.slot-img .ctrl button{width:28px;height:28px;border-radius:8px;border:none;background:rgba(0,0,0,.62);color:#fff;font-size:14px;cursor:pointer;line-height:1}
+.slot-img .ctrl button:active{transform:scale(.96)}
+.slot.dragging{opacity:.45}
+.slot-img .drag-hint{position:absolute;left:6px;top:6px;z-index:3;background:rgba(0,0,0,.55);color:#fff;font-size:11px;padding:4px 6px;border-radius:7px}
 .slot-body{padding:12px}
 .slot-body label{display:block;font-size:.72rem;color:var(--muted);font-weight:700;margin-bottom:4px}
 .slot-body input[type=text]{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:#0f0f14;color:var(--text);font:inherit;font-size:.95rem}
@@ -103,11 +108,52 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
   let activeSlot = null;
 
   const slotEls = [];
+  function refreshSlot(i){
+    const s = state[i];
+    const {imgBox, file} = slotEls[i];
+    imgBox.querySelector('.ph')?.remove();
+    imgBox.querySelector('img')?.remove();
+    imgBox.querySelector('.ctrl')?.remove();
+    imgBox.querySelector('.drag-hint')?.remove();
+    if (s.src) {
+      const imgEl = document.createElement('img');
+      if (!s.src.startsWith('data:')) imgEl.crossOrigin = 'anonymous';
+      imgEl.src = s.src; imgEl.alt = s.title || `映画${i+1}`;
+      imgBox.appendChild(imgEl);
+      const ctrl = document.createElement('div');
+      ctrl.className = 'ctrl';
+      ctrl.innerHTML = `<button type="button" data-act="clear" aria-label="削除">×</button>`;
+      ctrl.addEventListener('click', (e) => {
+        e.stopPropagation(); e.preventDefault();
+        const act = e.target.closest('button')?.dataset.act;
+        if (act === 'clear') { clearSlot(i); }
+      });
+      imgBox.appendChild(ctrl);
+      const hint = document.createElement('div'); hint.className='drag-hint'; hint.textContent='長押しで並べ替え';
+      imgBox.appendChild(hint);
+      file.style.pointerEvents = 'none';
+    } else {
+      const ph = document.createElement('div');
+      ph.className = 'ph';
+      ph.innerHTML = `<strong>${i+1}</strong>タップで画像追加<br>または下の検索`;
+      imgBox.insertBefore(ph, file);
+      file.style.pointerEvents = 'auto';
+    }
+  }
+  function clearSlot(i){
+    state[i] = { title:'', img:null, src:'' };
+    refreshSlot(i); render();
+  }
+  function swapSlots(a,b){
+    const tmp = state[a]; state[a] = state[b]; state[b] = tmp;
+    refreshSlot(a); refreshSlot(b); render();
+  }
+
   function makeSlot(i){
     const el = document.createElement('div');
     el.className = 'slot';
     el.innerHTML = `
-        <div class="slot-img">
+        <div class="slot-img" draggable="false">
         <div class="ph"><strong>${i+1}</strong>タップで画像追加<br>または下の検索</div>
         <input type="file" accept="image/*" aria-label="映画${i+1}の画像をアップロード">
       </div>
@@ -122,14 +168,8 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
       if(!f) return;
       const url = await readAsDataURL(f);
       const im = await loadImage(url);
-      state[i].img = im;
-      state[i].src = url;
-      imgBox.querySelector('.ph')?.remove();
-      let imgEl = imgBox.querySelector('img');
-      if(!imgEl){ imgEl = document.createElement('img'); imgBox.appendChild(imgEl); }
-      imgEl.src = url;
-      imgEl.alt = state[i].title || `映画${i+1}`;
-      render();
+      state[i] = { title: state[i].title || '', img: im, src: url };
+      refreshSlot(i); render();
     });
     searchBtn.addEventListener('click', () => {
       activeSlot = i;
@@ -146,35 +186,64 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
       box.scrollIntoView({behavior:'smooth', block:'nearest'});
       input.focus();
     });
+
+    // long-press drag reorder
+    let pressTimer=null, dragging=false, startX=0, startY=0;
+    imgBox.addEventListener('pointerdown', (e)=>{
+      if (e.target.closest('.ctrl') || e.target.tagName==='INPUT') return;
+      if (!state[i].src) return;
+      startX=e.clientX; startY=e.clientY;
+      pressTimer = setTimeout(()=>{ dragging=true; el.classList.add('dragging'); imgBox.style.touchAction='none'; try{imgBox.setPointerCapture(e.pointerId);}catch{} }, 350);
+    });
+    imgBox.addEventListener('pointermove', (e)=>{
+      if (!pressTimer && !dragging) return;
+      if (!dragging && (Math.abs(e.clientX-startX)>8 || Math.abs(e.clientY-startY)>8)) { clearTimeout(pressTimer); pressTimer=null; }
+    });
+    imgBox.addEventListener('pointerup', (e)=>{
+      if (pressTimer) { clearTimeout(pressTimer); pressTimer=null; }
+      if (!dragging) return;
+      dragging=false; el.classList.remove('dragging'); imgBox.style.touchAction='';
+      const hit = document.elementFromPoint(e.clientX,e.clientY);
+      const slot = hit?.closest('.slot');
+      if (slot) {
+        const j = slotEls.findIndex(x=>x.el===slot);
+        if (j!==-1 && j!==i) swapSlots(i,j);
+      }
+    });
+    imgBox.addEventListener('pointercancel', ()=>{ if(pressTimer){clearTimeout(pressTimer);pressTimer=null;} dragging=false; el.classList.remove('dragging'); imgBox.style.touchAction=''; });
+    imgBox.addEventListener('contextmenu', (e)=>{ if(state[i].src) e.preventDefault(); });
+
     slotsEl.appendChild(el);
-    slotEls.push({el, imgBox});
+    slotEls.push({el, imgBox, file});
   }
   for(let i=0;i<9;i++) makeSlot(i);
 
+  function findNextEmpty(from) {
+    for (let k = 0; k < 9; k++) { const j = (from + k) % 9; if (!state[j].img && !state[j].src) return j; }
+    return -1;
+  }
   async function runSlotSearch() {
     if (activeSlot == null || !window.CineCardMovieSearch) return;
-    const i = activeSlot;
     const q = document.getElementById('slotSearchInput').value.trim();
     const container = document.getElementById('slotSearchResults');
     const status = document.getElementById('slotSearchStatus');
     status.scrollIntoView({behavior:'smooth', block:'nearest'});
     await window.CineCardMovieSearch.inlineSearch({
       query: q, container, status,
-      onPick: async (movie) => {
-        state[i].title = movie.year ? `${movie.title} (${movie.year})` : movie.title;
+      onPick: async (movie, cardEl) => {
+        let target = (activeSlot != null && !state[activeSlot].img && !state[activeSlot].src) ? activeSlot : findNextEmpty(activeSlot ?? 0);
+        if (target === -1) { status.textContent = '空きスロットがありません。先に削除してください。'; return; }
+        state[target].title = movie.year ? `${movie.title} (${movie.year})` : movie.title;
         if (movie.poster) {
           try {
             const im = await loadImage(movie.poster, 'anonymous');
-            state[i].img = im; state[i].src = movie.poster;
-            const imgBox = slotEls[i].imgBox;
-            imgBox.querySelector('.ph')?.remove();
-            let imgEl = imgBox.querySelector('img');
-            if(!imgEl){ imgEl = document.createElement('img'); imgBox.appendChild(imgEl); }
-            imgEl.crossOrigin = 'anonymous'; imgEl.src = movie.poster; imgEl.alt = state[i].title;
+            state[target].img = im; state[target].src = movie.poster;
           } catch (e) { console.warn('poster load failed', e); }
         }
-        container.innerHTML = '';
-        status.textContent = `スロット ${i+1} に「${movie.title}」を設定しました`;
+        refreshSlot(target);
+        if (cardEl) { cardEl.style.outline = '2px solid #e8c468'; cardEl.style.opacity = '0.55'; cardEl.disabled = true; }
+        activeSlot = findNextEmpty(target);
+        status.textContent = `「${movie.title}」をスロット ${target+1} に追加` + (activeSlot === -1 ? '（空きなし）' : ` / 次: スロット ${activeSlot+1}`);
         render();
       }
     });

@@ -178,7 +178,7 @@
           <div class="ekms-meta"><div class="ekms-title"></div><div class="ekms-year"></div></div>`;
         card.querySelector('.ekms-title').textContent = it.title;
         card.querySelector('.ekms-year').textContent = it.year || '';
-        card.onclick = () => onPick(it);
+        card.onclick = () => onPick(it, card);
         container.appendChild(card);
       }
     } catch (e) {
