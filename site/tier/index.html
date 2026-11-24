@@ -70,10 +70,12 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
       </div>
 
       <div class="add-row">
-        <input id="newText" type="text" maxlength="30" placeholder="映画タイトルを入力して検索">
+        <input id="newText" type="text" maxlength="40" placeholder="映画タイトルを入力して検索">
         <button class="btn btn-primary" id="searchMovie" type="button">映画を検索</button>
         <label class="btn btn-ghost file-btn">画像追加<input id="addImg" type="file" accept="image/*" multiple></label>
       </div>
+      <div id="searchStatus" style="font-size:.82rem;color:var(--muted);margin-top:8px;min-height:1.2em"></div>
+      <div id="searchResults" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:10px"></div>
     </div>
 
     <div class="preview">
@@ -84,7 +86,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
           <button class="btn btn-primary" id="dl" type="button">画像を保存</button>
           <a class="btn btn-ghost" id="share" href="#" target="_blank" rel="noopener">Xでシェア</a>
         </div>
-        <p class="small">画像は端末内で生成されます。「Xでシェア」はテキスト投稿画面を開くので、保存した画像を添付してください。映画検索はTMDBの無料APIキー（初回のみ設定）を使います。</p>
+       
       </div>
     </div>
   </div>
@@ -143,11 +145,15 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
 
   newText.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); document.getElementById('searchMovie').click(); } });
   addImg.addEventListener('change', async e=>{ const fs=[...(e.target.files||[])]; if(fs.length) await addImageFiles(fs); e.target.value=''; });
-  document.getElementById('searchMovie').addEventListener('click', () => {
+  document.getElementById('searchMovie').addEventListener('click', async () => {
     if (!window.EigaKitMovieSearch) return;
     const q = newText.value.trim();
-    window.EigaKitMovieSearch.open({
+    const container = document.getElementById('searchResults');
+    const status = document.getElementById('searchStatus');
+    await window.EigaKitMovieSearch.inlineSearch({
       query: q,
+      container,
+      status,
       onPick: async (movie) => {
         const title = movie.title + (movie.year ? ` (${movie.year})` : '');
         if (movie.poster) {
@@ -161,6 +167,8 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
           items.push({id:uid(), type:'text', text:title, src:'', img:null, tier:'pool'});
         }
         newText.value = '';
+        container.innerHTML = '';
+        status.textContent = `「${movie.title}」を追加しました`;
         render();
       }
     });

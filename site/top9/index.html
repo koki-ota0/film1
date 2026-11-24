@@ -58,6 +58,8 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
       </div>
       <h2>9本の映画を選ぶ</h2>
       <div class="grid4" id="slots"></div>
+      <div id="slotSearchStatus" style="font-size:.82rem;color:var(--muted);margin-top:12px;min-height:1.2em"></div>
+      <div id="slotSearchResults" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:10px"></div>
     </div>
 
     <div class="preview">
@@ -68,7 +70,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
           <button class="btn btn-primary" id="dl" type="button">画像を保存</button>
           <a class="btn btn-ghost" id="share" href="#" target="_blank" rel="noopener">Xでシェア</a>
         </div>
-        <p class="small">「Xでシェア」はテキストとリンクを開きます。画像は「画像を保存」してから添付してください。<br>ポスター検索はTMDBの無料APIキーを使います（初回のみ設定）。</p>
+       
       </div>
     </div>
   </div>
@@ -87,6 +89,10 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
   const share = document.getElementById('share');
   const W = 1080; let H = 1750;
   const state = Array.from({length:9}, () => ({ title:'', img:null, src:'' }));
+  let theme = (window.EigaKitThemes && window.EigaKitThemes.byId['cinema-dark']) || {id:'cinema-dark',bg:['#1c1912','#0b0b0f','#15121a'],accent:'#e8c468',accent2:'#ff7a59',text:'#f2efe8',muted:'rgba(242,239,232,.62)',frame:'rgba(232,196,104,.22)',fontHead:'Georgia,serif',fontBody:'system-ui,sans-serif'};
+  if (window.EigaKitThemes) {
+    window.EigaKitThemes.mountPicker(document.getElementById('themePicker'), { initial: theme.id, onChange: (t) => { theme = t; render(); } });
+  }
 
   function makeSlot(i){
     const el = document.createElement('div');
@@ -119,10 +125,18 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
       render();
     });
     text.addEventListener('input', (e) => { state[i].title = e.target.value; render(); });
+    text.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); searchBtn.click(); } });
     const searchBtn = el.querySelector('.search-btn');
-    searchBtn.addEventListener('click', () => {
+    searchBtn.addEventListener('click', async () => {
       if (!window.EigaKitMovieSearch) return;
-      window.EigaKitMovieSearch.open({
+      const q = text.value.trim();
+      const container = document.getElementById('slotSearchResults');
+      const status = document.getElementById('slotSearchStatus');
+      status.textContent = `スロット ${i+1} の検索結果`;
+      await window.EigaKitMovieSearch.inlineSearch({
+        query: q,
+        container,
+        status,
         onPick: async (movie) => {
           state[i].title = movie.year ? `${movie.title} (${movie.year})` : movie.title;
           text.value = state[i].title;
@@ -139,6 +153,8 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
               imgEl.alt = state[i].title;
             } catch (e) { console.warn('poster load failed', e); }
           }
+          container.innerHTML = '';
+          status.textContent = `スロット ${i+1} に「${movie.title}」を設定しました`;
           render();
         }
       });
