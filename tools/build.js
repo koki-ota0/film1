@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * EigaKit build script (no dependencies).
+ * CineCard build script (no dependencies).
  * - reads apps.json
  * - copies site/<slug>/ into dist/app/<slug>/
  * - injects shared bar/meta into app pages
@@ -53,7 +53,7 @@ function head({ title, desc, canonical, image, extra = '', depth = 0 }) {
 <meta name="theme-color" content="${esc(site.themeColor || '#0b0b0f')}">
 <link rel="canonical" href="${esc(canonical)}">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="${esc(site.name || 'EigaKit')}">
+<meta property="og:site_name" content="${esc(site.name || 'CineCard')}">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:url" content="${esc(canonical)}">
@@ -71,7 +71,7 @@ ${extra}
 function header(active = '', depth = 0) {
   const p = depth ? '../'.repeat(depth) : '';
   return `<header class="h"><div class="wrap">
-<a class="logo" href="${p || './'}">${esc(site.name || 'EigaKit')}</a>
+<a class="logo" href="${p || './'}">${esc(site.name || 'CineCard')}</a>
 <nav>
   <a href="${p}apps/"${active === 'apps' ? ' aria-current="page"' : ''}>ツール一覧</a>
   <a href="${p}about.html"${active === 'about' ? ' aria-current="page"' : ''}>このサイトについて</a>
@@ -82,7 +82,7 @@ function header(active = '', depth = 0) {
 function footer(depth = 0) {
   const p = depth ? '../'.repeat(depth) : '';
   return `<footer class="f"><div class="wrap">
-<div>© ${new Date().getFullYear()} ${esc(site.name || 'EigaKit')}</div>
+<div>© ${new Date().getFullYear()} ${esc(site.name || 'CineCard')}</div>
 <div class="f-links">
   <a href="${p}apps/">ツール一覧</a>
   <a href="${p}about.html">このサイトについて</a>
@@ -108,7 +108,7 @@ function card(a, depth = 0) {
 
 function indexPage() {
   return `${head({
-    title: `${site.name || 'EigaKit'}｜映画の「好き」を、1枚の画像に。`,
+    title: `${site.name || 'CineCard'}｜映画の「好き」を、1枚の画像に。`,
     desc: site.description || '',
     canonical: abs(''),
     image: abs('assets/ogp-fallback.svg')
@@ -138,7 +138,7 @@ ${header('')}
 
   <section class="section"><div class="wrap">
     <div class="panel">
-      <h2>EigaKit の考え方</h2>
+      <h2>CineCard の考え方</h2>
       <ul class="steps">
         <li><strong>1分で作れる。</strong>アカウント登録なし。開いて、入れて、保存するだけ。</li>
         <li><strong>スマホで気持ちいい。</strong>映画を観たあと、布団の中からでも作れるサイズ感。</li>
@@ -152,8 +152,8 @@ ${footer(0)}`;
 
 function appsPage() {
   return `${head({
-    title: `ツール一覧｜${site.name || 'EigaKit'}`,
-    desc: `${site.name || 'EigaKit'} の映画テンプレ作成ツール一覧。好きな映画4選・ティア表・ランキングカードを無料で作成できます。`,
+    title: `ツール一覧｜${site.name || 'CineCard'}`,
+    desc: `${site.name || 'CineCard'} の映画テンプレ作成ツール一覧。好きな映画4選・ティア表・ランキングカードを無料で作成できます。`,
     canonical: abs('apps/'),
     image: abs('assets/ogp-fallback.svg'),
     depth: 1
@@ -189,7 +189,7 @@ function detailPage(a) {
     inLanguage: 'ja'
   });
   return `${head({
-    title: `${a.title}｜${site.name || 'EigaKit'}`,
+    title: `${a.title}｜${site.name || 'CineCard'}`,
     desc: a.summary || a.catch || '',
     canonical: detailUrl(a),
     image: abs('assets/ogp-fallback.svg'),
@@ -236,8 +236,8 @@ ${footer(2)}`;
 
 function aboutPage() {
   return `${head({
-    title: `このサイトについて｜${site.name || 'EigaKit'}`,
-    desc: `${site.name || 'EigaKit'} は映画好きのための無料テンプレ作成ツール集です。`,
+    title: `このサイトについて｜${site.name || 'CineCard'}`,
+    desc: `${site.name || 'CineCard'} は映画好きのための無料テンプレ作成ツール集です。`,
     canonical: abs('about.html'),
     image: abs('assets/ogp-fallback.svg')
   })}
@@ -245,7 +245,7 @@ function aboutPage() {
 ${header('about', 0)}
 <main class="wrap prose">
   <h1>このサイトについて</h1>
-  <p>${esc(site.name || 'EigaKit')} は、映画の感想や好きを「1枚の画像」にしてXでシェアしやすくするための、小さなWebツール集です。</p>
+  <p>${esc(site.name || 'CineCard')} は、映画の感想や好きを「1枚の画像」にしてXでシェアしやすくするための、小さなWebツール集です。</p>
   <h2>大事にしていること</h2>
   <ul>
     <li><strong>すぐ作れる：</strong>登録不要、開いてすぐ使える。</li>
@@ -260,8 +260,8 @@ ${footer(0)}`;
 
 function privacyPage() {
   return `${head({
-    title: `プライバシーポリシー｜${site.name || 'EigaKit'}`,
-    desc: `${site.name || 'EigaKit'} のプライバシーポリシーです。`,
+    title: `プライバシーポリシー｜${site.name || 'CineCard'}`,
+    desc: `${site.name || 'CineCard'} のプライバシーポリシーです。`,
     canonical: abs('privacy-policy.html'),
     image: abs('assets/ogp-fallback.svg')
   })}
@@ -269,7 +269,7 @@ function privacyPage() {
 ${header('', 0)}
 <main class="wrap prose">
   <h1>プライバシーポリシー</h1>
-  <p>${esc(site.name || 'EigaKit')}（以下「当サイト」）は、利用者のプライバシーを尊重します。</p>
+  <p>${esc(site.name || 'CineCard')}（以下「当サイト」）は、利用者のプライバシーを尊重します。</p>
   <h2>入力データの扱い</h2>
   <p>テンプレート作成時に入力するテキストやアップロード画像は、原則としてお使いのブラウザ内で処理されます。当サイトのサーバーに送信・保存されることはありません。</p>
   <h2>アクセス解析・広告</h2>
@@ -298,8 +298,8 @@ function appMeta(a) {
   return `<meta name="description" content="${esc(a.catch || '')}">` +
     `<link rel="canonical" href="${esc(appUrl(a))}">` +
     `<meta property="og:type" content="website">` +
-    `<meta property="og:site_name" content="${esc(site.name || 'EigaKit')}">` +
-    `<meta property="og:title" content="${esc(a.title)}｜${esc(site.name || 'EigaKit')}">` +
+    `<meta property="og:site_name" content="${esc(site.name || 'CineCard')}">` +
+    `<meta property="og:title" content="${esc(a.title)}｜${esc(site.name || 'CineCard')}">` +
     `<meta property="og:description" content="${esc(a.catch || '')}">` +
     `<meta property="og:url" content="${esc(appUrl(a))}">` +
     `<meta property="og:image" content="${esc(abs('assets/ogp-fallback.svg'))}">` +
@@ -319,7 +319,7 @@ function appBar(a) {
 @media(max-width:640px){#ek-app-header .ek-wrap{padding:12px 0}#ek-app-header .ek-logo{font-size:1.28rem}#ek-app-header nav{gap:12px}#ek-app-header nav a{font-size:.82rem}}
 </style>
 <header id="ek-app-header"><div class="ek-wrap">
-  <a class="ek-logo" href="../../">EigaKit</a>
+  <a class="ek-logo" href="../../">CineCard</a>
   <nav>
     <a href="../../apps/">ツール一覧</a>
     <a href="../../about.html">このサイトについて</a>
@@ -353,15 +353,15 @@ if (fs.existsSync(P(ROOT, 'assets'))) copyDir(P(ROOT, 'assets'), P(DIST, 'assets
 // Inject runtime config (TMDB key comes from env at build time; never hardcode in git).
 function readLocalTmdbKey() {
   try {
-    const p = P(ROOT, 'assets', 'eigakit-config.js');
+    const p = P(ROOT, 'assets', 'cinecard-config.js');
     if (!fs.existsSync(p)) return '';
     const m = fs.readFileSync(p, 'utf8').match(/tmdbApiKey\s*:\s*["\']([^"\']+)["\']/);
     return m ? m[1] : '';
   } catch { return ''; }
 }
 const tmdbApiKey = (process.env.TMDB_API_KEY || readLocalTmdbKey() || '').trim();
-const cfg = `window.EIGAKIT_CONFIG = {\n  tmdbApiKey: ${JSON.stringify(tmdbApiKey)}\n};\n`;
-write(P(DIST, 'assets', 'eigakit-config.js'), cfg);
+const cfg = `window.CINECARD_CONFIG = {\n  tmdbApiKey: ${JSON.stringify(tmdbApiKey)}\n};\n`;
+write(P(DIST, 'assets', 'cinecard-config.js'), cfg);
 
 // copy app files
 for (const a of apps) {

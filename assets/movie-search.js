@@ -1,12 +1,15 @@
 (() => {
-  const KEY_STORE = 'eigakit_tmdb_key';
+  const KEY_STORE = 'cinecard_tmdb_key';
+  const LEGACY_KEY_STORE = 'eigakit_tmdb_key';
   const BASE = 'https://api.themoviedb.org/3';
   const IMG = 'https://image.tmdb.org/t/p/w500';
 
   function getBuiltInKey() {
-    try { return (window.EIGAKIT_CONFIG && window.EIGAKIT_CONFIG.tmdbApiKey) || ''; } catch { return ''; }
+    try { return (window.CINECARD_CONFIG && window.CINECARD_CONFIG.tmdbApiKey) || ''; } catch { return ''; }
   }
-  function getUserKey() { try { return localStorage.getItem(KEY_STORE) || ''; } catch { return ''; } }
+  function getUserKey() {
+    try { return localStorage.getItem(KEY_STORE) || localStorage.getItem(LEGACY_KEY_STORE) || ''; } catch { return ''; }
+  }
   function getKey() { return getUserKey() || getBuiltInKey(); }
   function setKey(v) { try { localStorage.setItem(KEY_STORE, v.trim()); } catch {} }
 
@@ -183,5 +186,5 @@
     }
   }
 
-  window.EigaKitMovieSearch = { open, getKey, setKey, inlineSearch };
+  window.CineCardMovieSearch = { open, getKey, setKey, inlineSearch };
 })();

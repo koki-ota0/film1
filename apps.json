@@ -1,8 +1,8 @@
 {
   "site": {
-    "name": "EigaKit",
+    "name": "CineCard",
     "tagline": "映画の「好き」を、1枚の画像に。",
-    "description": "EigaKit は、映画好きのための無料テンプレ作成ツール集です。好きな映画4選・ティア表・ランキングカードをつくって、画像でXにシェアできます。インストール不要、スマホでもすぐ使えます。",
+    "description": "CineCard は、映画好きのための無料テンプレ作成ツール集です。好きな映画4選・ティア表・ランキングカードをつくって、画像でXにシェアできます。インストール不要、スマホでもすぐ使えます。",
     "baseUrl": "https://kokilux.github.io/film1/",
     "author": "kokilux",
     "xHandle": "",

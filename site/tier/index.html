@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>映画ティア表メーカー｜EigaKit</title>
+<title>映画ティア表メーカー｜CineCard</title>
 <style>
 :root{--bg:#0b0b0f;--panel:#17171e;--line:#2a2a35;--text:#f2efe8;--muted:#a8a39a;--accent:#e8c468;--sans:"Hiragino Sans","Noto Sans JP","Yu Gothic",system-ui,sans-serif;--serif:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",Georgia,serif}
 *,*::before,*::after{box-sizing:border-box} body{margin:0;background:radial-gradient(900px 500px at 10% -10%,#2a2112,transparent 60%),var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6}
@@ -49,7 +49,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
 </head>
 <body>
 <div class="wrap">
-  <p style="color:var(--accent);font-weight:700;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;margin:0">EigaKit Template</p>
+  <p style="color:var(--accent);font-weight:700;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;margin:0">CineCard Template</p>
   <h1>映画ティア表メーカー</h1>
   <p class="lead">観た映画をS〜Dに並べて、議論が始まる1枚をつくろう。スマホは「アイテムをタップ → 段をタップ」で移動できます。</p>
 
@@ -92,7 +92,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
   </div>
 </div>
 
-<script src="../../assets/eigakit-config.js"></script>
+<script src="../../assets/cinecard-config.js"></script>
 <script src="../../assets/movie-search.js"></script>
 <script src="../../assets/themes.js"></script>
 <script>
@@ -118,9 +118,9 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
   let items = []; // {id,type,text,src,img,tier}
   let selectedId = null;
   let nextId = 1;
-  let theme = (window.EigaKitThemes && window.EigaKitThemes.byId['cinema-dark']) || {bg:['#191610','#0b0b0f','#121018'],accent:'#e8c468',accent2:'#ff7a59',text:'#f2efe8',muted:'rgba(242,239,232,.62)',frame:'rgba(232,196,104,.22)',fontHead:'Georgia,serif',fontBody:'system-ui,sans-serif'};
-  if (window.EigaKitThemes) {
-    window.EigaKitThemes.mountPicker(document.getElementById('themePicker'), { initial: theme.id, onChange: (t) => { theme = t; render(); } });
+  let theme = (window.CineCardThemes && window.CineCardThemes.byId['cinema-dark']) || {bg:['#191610','#0b0b0f','#121018'],accent:'#e8c468',accent2:'#ff7a59',text:'#f2efe8',muted:'rgba(242,239,232,.62)',frame:'rgba(232,196,104,.22)',fontHead:'Georgia,serif',fontBody:'system-ui,sans-serif'};
+  if (window.CineCardThemes) {
+    window.CineCardThemes.mountPicker(document.getElementById('themePicker'), { initial: theme.id, onChange: (t) => { theme = t; render(); } });
   }
 
   function uid(){ return nextId++; }
@@ -146,12 +146,12 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
   newText.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); document.getElementById('searchMovie').click(); } });
   addImg.addEventListener('change', async e=>{ const fs=[...(e.target.files||[])]; if(fs.length) await addImageFiles(fs); e.target.value=''; });
   document.getElementById('searchMovie').addEventListener('click', async () => {
-    if (!window.EigaKitMovieSearch) return;
+    if (!window.CineCardMovieSearch) return;
     const q = newText.value.trim();
     const container = document.getElementById('searchResults');
     const status = document.getElementById('searchStatus');
     status.scrollIntoView({behavior:'smooth',block:'nearest'});
-    await window.EigaKitMovieSearch.inlineSearch({
+    await window.CineCardMovieSearch.inlineSearch({
       query: q,
       container,
       status,
@@ -345,14 +345,14 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
 
     ctx.fillStyle=t.muted; ctx.textAlign='center'; ctx.textBaseline='bottom';
     ctx.font=`500 24px ${t.fontBody}`;
-    ctx.fillText('made with EigaKit', W/2, H-28);
+    ctx.fillText('made with CineCard', W/2, H-28);
 
-    const tt = encodeURIComponent(`${titleInput.value.trim()||'映画ティア表'} を作った！\n\n#映画ティア表 #EigaKit #映画好きと繋がりたい`);
+    const tt = encodeURIComponent(`${titleInput.value.trim()||'映画ティア表'} を作った！\n\n#映画ティア表 #CineCard #映画好きと繋がりたい`);
     const url = encodeURIComponent(location.href.replace(/\/app\/tier\/.*$/, '/app/tier/'));
     share.href = `https://x.com/intent/post?text=${tt}&url=${url}`;
   }
 
-  document.getElementById('dl').addEventListener('click', ()=>{ const a=document.createElement('a'); a.download='eigakit-tier.png'; a.href=canvas.toDataURL('image/png'); a.click(); });
+  document.getElementById('dl').addEventListener('click', ()=>{ const a=document.createElement('a'); a.download='cinecard-tier.png'; a.href=canvas.toDataURL('image/png'); a.click(); });
   render();
 
   // initial sample items for easier first experience? No, keep clean.
