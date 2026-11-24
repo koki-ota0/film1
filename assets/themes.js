@@ -101,7 +101,7 @@
 .ek-theme-card{border:1px solid rgba(255,255,255,.1);background:#121218;border-radius:14px;padding:10px;cursor:pointer;text-align:left;color:#f2efe8;transition:transform .12s,border-color .12s}
 .ek-theme-card:hover{transform:translateY(-1px);border-color:rgba(232,196,104,.35)}
 .ek-theme-card[aria-pressed="true"]{border-color:#e8c468;box-shadow:0 0 0 2px rgba(232,196,104,.25)}
-.ek-theme-swatch{height:58px;border-radius:10px;margin-bottom:10px;border:1px solid rgba(255,255,255,.08);position:relative;overflow:hidden}
+.ek-theme-swatch{height:96px;border-radius:10px;margin-bottom:10px;border:1px solid rgba(255,255,255,.08);position:relative;overflow:hidden;background:#111}
 .ek-theme-swatch .a{position:absolute;right:8px;bottom:8px;width:18px;height:18px;border-radius:50%}
 .ek-theme-name{font-size:.82rem;font-weight:700;line-height:1.3}
 .ek-theme-desc{font-size:.72rem;color:#a8a39a;line-height:1.35;margin-top:3px}
@@ -161,6 +161,27 @@
 
       const grid = backdrop.querySelector('.ek-theme-grid');
       const tabs = [...backdrop.querySelectorAll('.ek-theme-tab')];
+      function drawMiniPreview(cv, t) {
+        const w=cv.width=320, h=cv.height=200;
+        const x=cv.getContext('2d');
+        const bg=x.createLinearGradient(0,0,w,h);
+        bg.addColorStop(0,t.bg[0]); bg.addColorStop(.5,t.bg[1]||t.bg[0]); bg.addColorStop(1,t.bg[2]||t.bg[1]||t.bg[0]);
+        x.fillStyle=bg; x.fillRect(0,0,w,h);
+        x.strokeStyle=t.frame; x.lineWidth=3; x.strokeRect(8,8,w-16,h-16);
+        x.fillStyle=t.accent; x.font='700 10px '+t.fontBody; x.textAlign='center'; x.fillText('MOVIE', w/2, 28);
+        x.fillStyle=t.text; x.font='700 20px '+t.fontHead; x.fillText('タイトル', w/2, 54);
+        const cols=3, gap=6, pad=20, top=70;
+        const cw=(w-pad*2-gap*(cols-1))/cols, ch=cw*1.35;
+        for(let i=0;i<3;i++){
+          const px=pad+i*(cw+gap);
+          const g=x.createLinearGradient(px,top,px,top+ch);
+          g.addColorStop(0,t.bg[2]||t.bg[1]||'#333'); g.addColorStop(1,t.bg[1]||'#222');
+          x.fillStyle=g; x.fillRect(px,top,cw,ch);
+          x.strokeStyle=t.frame; x.strokeRect(px,top,cw,ch);
+          x.fillStyle=t.muted; x.font='600 9px '+t.fontBody; x.textAlign='center'; x.fillText('映画'+(i+1), px+cw/2, top+ch-8);
+        }
+        x.fillStyle=t.muted; x.font='500 8px '+t.fontBody; x.textAlign='center'; x.fillText('made with EigaKit', w/2, h-14);
+      }
       function renderGrid() {
         tabs.forEach(t => t.setAttribute('aria-selected', t.dataset.tab===tab?'true':'false'));
         const list = tab==='style' ? styleThemes : movieThemes;
@@ -169,16 +190,18 @@
           const b = document.createElement('button');
           b.type='button'; b.className='ek-theme-card';
           b.setAttribute('aria-pressed', t.id===current?'true':'false');
-          const bg = `linear-gradient(135deg, ${t.bg[0]}, ${t.bg[1]||t.bg[0]})`;
-          b.innerHTML = `<div class="ek-theme-swatch" style="background:${bg};box-shadow:inset 0 0 0 2px ${t.frame}"><span class="a" style="background:${t.accent}"></span></div><div class="ek-theme-name"></div><div class="ek-theme-desc"></div>`;
+          b.innerHTML = `<div class="ek-theme-swatch" style="padding:0;overflow:hidden"><canvas style="width:100%;height:100%;display:block"></canvas></div><div class="ek-theme-name"></div><div class="ek-theme-desc"></div>`;
           b.querySelector('.ek-theme-name').textContent = t.name;
           b.querySelector('.ek-theme-desc').textContent = t.desc;
+          const cv = b.querySelector('canvas');
+          drawMiniPreview(cv, t);
           b.onclick = () => { current = t.id; renderTrigger(); onChange(byId[current]); close(); };
           grid.appendChild(b);
         });
       }
       tabs.forEach(t => t.onclick = () => { tab=t.dataset.tab; renderGrid(); });
       renderGrid();
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{ if(backdrop.isConnected) renderGrid(); });
     }
 
     renderTrigger();

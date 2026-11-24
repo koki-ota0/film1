@@ -287,7 +287,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
     ctx.fillText('made with EigaKit', W/2, H - 44);
 
     const text = encodeURIComponent(`私の好きな映画9選\n\n${state.map((s,i)=>`${i+1}. ${s.title.trim()||'—'}`).join('\n')}\n\n#好きな映画9選 #EigaKit`);
-    const url = encodeURIComponent(location.href.replace(/\/app\/top4\/.*$/, '/app/top4/'));
+    const url = encodeURIComponent(location.href.replace(/\/app\/top9\/.*$/, '/app/top9/'));
     share.href = `https://x.com/intent/post?text=${text}&url=${url}`;
   }
 

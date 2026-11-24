@@ -28,7 +28,7 @@ h1{font-family:var(--serif);font-size:clamp(1.8rem,5vw,3rem);margin:.2em 0 .2em;
 .pool-wrap{margin-top:16px}
 .pool{display:flex;flex-wrap:wrap;gap:8px;padding:12px;min-height:92px;border-radius:14px;border:1px dashed rgba(255,255,255,.18);background:rgba(255,255,255,.02)}
 .pool.drag-over{outline:2px dashed rgba(232,196,104,.7);outline-offset:-4px}
-.add-row{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;margin-top:14px}
+.add-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;margin-top:14px}
 .add-row input[type=text]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:#0f0f14;color:var(--text);font:inherit}
 .add-row input[type=text]:focus{outline:2px solid rgba(232,196,104,.45);border-color:rgba(232,196,104,.5)}
 .btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 16px;border-radius:999px;border:1px solid transparent;font:700 .88rem var(--sans);cursor:pointer;text-decoration:none;transition:transform .15s;background:none;color:var(--text)}
@@ -70,9 +70,8 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
       </div>
 
       <div class="add-row">
-        <input id="newText" type="text" maxlength="30" placeholder="映画タイトルを入力（検索推奨）">
+        <input id="newText" type="text" maxlength="30" placeholder="映画タイトルを入力して検索">
         <button class="btn btn-primary" id="searchMovie" type="button">映画を検索</button>
-        <button class="btn btn-ghost" id="addText" type="button">テキスト追加</button>
         <label class="btn btn-ghost file-btn">画像追加<input id="addImg" type="file" accept="image/*" multiple></label>
       </div>
     </div>
@@ -142,7 +141,6 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
     render();
   }
 
-  addText.addEventListener('click', ()=>addTextItem(newText.value));
   newText.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); document.getElementById('searchMovie').click(); } });
   addImg.addEventListener('change', async e=>{ const fs=[...(e.target.files||[])]; if(fs.length) await addImageFiles(fs); e.target.value=''; });
   document.getElementById('searchMovie').addEventListener('click', () => {

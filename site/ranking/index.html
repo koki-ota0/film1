@@ -135,8 +135,9 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
     const subText = sub.value.trim();
     // dynamic height
     const headerH = 112 + (head.length>16?144:72) + (subText?52:0) + 30;
-    const rowH = 112;
-    H = Math.max(1350, headerH + items.length*rowH + 120);
+    const rowHeights = items.map((_,i)=> i===0?150 : i<3?128 : 108);
+    const totalRowsH = rowHeights.reduce((a,b)=>a+b,0);
+    H = Math.max(1350, headerH + totalRowsH + 120);
     canvas.width=W; canvas.height=H;
     ctx.clearRect(0,0,W,H);
     const bg = ctx.createLinearGradient(0,0,0,H);
@@ -159,24 +160,34 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
     y += 20;
 
     const left = 84, right = W-84;
+    let ry = y;
     items.forEach((it, i) => {
-      const ry = y + i*rowH;
+      const rh = rowHeights[i];
       ctx.strokeStyle=t.frame; ctx.globalAlpha=0.4; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(left, ry); ctx.lineTo(right, ry); ctx.stroke(); ctx.globalAlpha=1;
+      const top3 = i < 3;
       const rankColor = i===0 ? t.accent : i===1 ? t.text : i===2 ? (t.accent2||t.accent) : t.muted;
+      const rankSize = i===0 ? 76 : i<3 ? 64 : 48;
+      const titleSize = i===0 ? 48 : i<3 ? 42 : 36;
+      const commentSize = i===0 ? 30 : i<3 ? 28 : 24;
+      const xText = left + (i===0 ? 92 : 78);
       ctx.fillStyle=rankColor; ctx.textAlign='left'; ctx.textBaseline='middle';
-      ctx.font=`700 54px ${t.fontHead}`;
-      ctx.fillText(String(i+1), left, ry + rowH/2 - (it.comment.trim()?14:0));
-      ctx.fillStyle=t.text; ctx.font=`700 38px ${t.fontBody}`;
+      ctx.font=`700 ${rankSize}px ${t.fontHead}`;
+      ctx.fillText(String(i+1), left, ry + rh/2 - (it.comment.trim()?16:0));
+      ctx.fillStyle=t.text; ctx.font=`700 ${titleSize}px ${t.fontBody}`;
       const title = it.title.trim() || '（未入力）';
-      const tLines = wrap(title, right-left-90, `700 38px ${t.fontBody}`, 1);
-      ctx.fillText(tLines[0], left+72, ry + rowH/2 - (it.comment.trim()?16:0));
+      const tLines = wrap(title, right-xText, `700 ${titleSize}px ${t.fontBody}`, 1);
+      ctx.fillText(tLines[0], xText, ry + rh/2 - (it.comment.trim()?18:0));
       if(it.comment.trim()){
-        ctx.fillStyle=t.muted; ctx.font=`400 26px ${t.fontBody}`;
-        const cLines = wrap(it.comment.trim(), right-left-90, `400 26px ${t.fontBody}`, 1);
-        ctx.fillText(cLines[0], left+72, ry + rowH/2 + 28);
+        ctx.fillStyle=t.muted; ctx.font=`400 ${commentSize}px ${t.fontBody}`;
+        const cLines = wrap(it.comment.trim(), right-xText, `400 ${commentSize}px ${t.fontBody}`, 1);
+        ctx.fillText(cLines[0], xText, ry + rh/2 + (i===0?32:28));
       }
+      if(i===0){
+        ctx.fillStyle=t.accent; ctx.globalAlpha=0.08; rr(left, ry+6, right-left, rh-12, 14); ctx.fill(); ctx.globalAlpha=1;
+      }
+      ry += rh;
     });
-    const endY = y + items.length*rowH;
+    const endY = ry;
     ctx.strokeStyle=t.frame; ctx.globalAlpha=0.4; ctx.beginPath(); ctx.moveTo(left,endY); ctx.lineTo(right,endY); ctx.stroke(); ctx.globalAlpha=1;
 
     ctx.fillStyle=t.muted; ctx.textAlign='center'; ctx.textBaseline='bottom';
