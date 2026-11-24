@@ -67,12 +67,13 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
           <button class="btn btn-primary" id="dl" type="button">画像を保存</button>
           <a class="btn btn-ghost" id="share" href="#" target="_blank" rel="noopener">Xでシェア</a>
         </div>
-        <p class="small">「Xでシェア」はテキストとリンクを開きます。画像は「画像を保存」してから添付してください。</p>
+        <p class="small">「Xでシェア」はテキストとリンクを開きます。画像は「画像を保存」してから添付してください。<br>ポスター検索はTMDBの無料APIキーを使います（初回のみ設定）。</p>
       </div>
     </div>
   </div>
 </div>
 
+<script src="../../assets/movie-search.js"></script>
 <script>
 (() => {
   const slotsEl = document.getElementById('slots');
@@ -88,13 +89,14 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
     const el = document.createElement('div');
     el.className = 'slot';
     el.innerHTML = `
-      <div class="slot-img">
+        <div class="slot-img">
         <div class="ph"><strong>${i+1}</strong>タップして<br>ポスター画像を追加</div>
         <input type="file" accept="image/*" aria-label="映画${i+1}のポスター画像">
       </div>
       <div class="slot-body">
         <label for="t${i}">映画${i+1}のタイトル</label>
         <input id="t${i}" type="text" maxlength="40" placeholder="例：千と千尋の神隠し">
+        <button type="button" class="btn btn-ghost btn-sm search-btn" style="margin-top:8px;width:100%;padding:9px 10px;font-size:.8rem;border-radius:10px">映画を検索</button>
       </div>`;
     const file = el.querySelector('input[type=file]');
     const text = el.querySelector('input[type=text]');
@@ -114,6 +116,30 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
       render();
     });
     text.addEventListener('input', (e) => { state[i].title = e.target.value; render(); });
+    const searchBtn = el.querySelector('.search-btn');
+    searchBtn.addEventListener('click', () => {
+      if (!window.EigaKitMovieSearch) return;
+      window.EigaKitMovieSearch.open({
+        onPick: async (movie) => {
+          state[i].title = movie.year ? `${movie.title} (${movie.year})` : movie.title;
+          text.value = state[i].title;
+          if (movie.poster) {
+            try {
+              const im = await loadImage(movie.poster, 'anonymous');
+              state[i].img = im;
+              state[i].src = movie.poster;
+              imgBox.querySelector('.ph')?.remove();
+              let imgEl = imgBox.querySelector('img');
+              if(!imgEl){ imgEl = document.createElement('img'); imgBox.appendChild(imgEl); }
+              imgEl.crossOrigin = 'anonymous';
+              imgEl.src = movie.poster;
+              imgEl.alt = state[i].title;
+            } catch (e) { console.warn('poster load failed', e); }
+          }
+          render();
+        }
+      });
+    });
     slotsEl.appendChild(el);
   }
   for(let i=0;i<4;i++) makeSlot(i);
@@ -121,8 +147,8 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
   function readAsDataURL(file){
     return new Promise((res, rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
   }
-  function loadImage(src){
-    return new Promise((res, rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=src; });
+  function loadImage(src, crossOrigin){
+    return new Promise((res, rej)=>{ const i=new Image(); if(crossOrigin) i.crossOrigin=crossOrigin; i.onload=()=>res(i); i.onerror=rej; i.src=src; });
   }
 
   function roundRect(x,y,w,h,r){

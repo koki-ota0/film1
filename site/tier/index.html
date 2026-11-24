@@ -28,7 +28,7 @@ h1{font-family:var(--serif);font-size:clamp(1.8rem,5vw,3rem);margin:.2em 0 .2em;
 .pool-wrap{margin-top:16px}
 .pool{display:flex;flex-wrap:wrap;gap:8px;padding:12px;min-height:92px;border-radius:14px;border:1px dashed rgba(255,255,255,.18);background:rgba(255,255,255,.02)}
 .pool.drag-over{outline:2px dashed rgba(232,196,104,.7);outline-offset:-4px}
-.add-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;margin-top:14px}
+.add-row{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;margin-top:14px}
 .add-row input[type=text]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:#0f0f14;color:var(--text);font:inherit}
 .add-row input[type=text]:focus{outline:2px solid rgba(232,196,104,.45);border-color:rgba(232,196,104,.5)}
 .btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 16px;border-radius:999px;border:1px solid transparent;font:700 .88rem var(--sans);cursor:pointer;text-decoration:none;transition:transform .15s;background:none;color:var(--text)}
@@ -72,6 +72,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
         <input id="newText" type="text" maxlength="30" placeholder="映画タイトルを入力">
         <button class="btn btn-primary" id="addText" type="button">追加</button>
         <label class="btn btn-ghost file-btn">画像追加<input id="addImg" type="file" accept="image/*" multiple></label>
+        <button class="btn btn-ghost" id="searchMovie" type="button">映画検索</button>
       </div>
     </div>
 
@@ -83,12 +84,13 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
           <button class="btn btn-primary" id="dl" type="button">画像を保存</button>
           <a class="btn btn-ghost" id="share" href="#" target="_blank" rel="noopener">Xでシェア</a>
         </div>
-        <p class="small">画像は端末内で生成されます。「Xでシェア」はテキスト投稿画面を開くので、保存した画像を添付してください。</p>
+        <p class="small">画像は端末内で生成されます。「Xでシェア」はテキスト投稿画面を開くので、保存した画像を添付してください。映画検索はTMDBの無料APIキー（初回のみ設定）を使います。</p>
       </div>
     </div>
   </div>
 </div>
 
+<script src="../../assets/movie-search.js"></script>
 <script>
 (() => {
   const TIERS = [
@@ -121,7 +123,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
     render();
   }
   function readAsDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
-  function loadImage(src){ return new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=src; }); }
+  function loadImage(src, crossOrigin='anonymous'){ return new Promise((res,rej)=>{ const i=new Image(); if(crossOrigin) i.crossOrigin=crossOrigin; i.onload=()=>res(i); i.onerror=rej; i.src=src; }); }
   async function addImageFiles(files){
     for(const f of files){
       if(!f.type.startsWith('image/')) continue;
@@ -135,6 +137,25 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
   addText.addEventListener('click', ()=>addTextItem(newText.value));
   newText.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); addTextItem(newText.value); } });
   addImg.addEventListener('change', async e=>{ const fs=[...(e.target.files||[])]; if(fs.length) await addImageFiles(fs); e.target.value=''; });
+  document.getElementById('searchMovie').addEventListener('click', () => {
+    if (!window.EigaKitMovieSearch) return;
+    window.EigaKitMovieSearch.open({
+      onPick: async (movie) => {
+        const title = movie.title + (movie.year ? ` (${movie.year})` : '');
+        if (movie.poster) {
+          try {
+            const img = await loadImage(movie.poster, 'anonymous');
+            items.push({id:uid(), type:'image', text:title, src:movie.poster, img, tier:'pool'});
+          } catch (e) {
+            items.push({id:uid(), type:'text', text:title, src:'', img:null, tier:'pool'});
+          }
+        } else {
+          items.push({id:uid(), type:'text', text:title, src:'', img:null, tier:'pool'});
+        }
+        render();
+      }
+    });
+  });
   titleInput.addEventListener('input', draw);
 
   function tierItems(tierId){ return items.filter(it=>it.tier===tierId); }
@@ -157,7 +178,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
     el.draggable = true;
     el.dataset.id = String(it.id);
     if(it.type==='image'){
-      const im = document.createElement('img'); im.src = it.src; im.alt = it.text || 'movie'; el.appendChild(im);
+      const im = document.createElement('img'); if(it.src && !it.src.startsWith('data:')) im.crossOrigin='anonymous'; im.src = it.src; im.alt = it.text || 'movie'; el.appendChild(im);
     } else {
       const t = document.createElement('div'); t.className='txt'; t.textContent = it.text; el.appendChild(t);
     }
