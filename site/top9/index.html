@@ -58,7 +58,14 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
       </div>
       <h2>9本の映画を選ぶ</h2>
       <div class="grid4" id="slots"></div>
-      <div id="slotSearchStatus" style="font-size:.82rem;color:var(--muted);margin-top:12px;min-height:1.2em"></div>
+      <div id="slotSearchBox" style="margin-top:14px;display:none">
+        <div style="font-size:.82rem;color:var(--muted);margin-bottom:8px" id="slotSearchLabel"></div>
+        <div style="display:flex;gap:8px">
+          <input id="slotSearchInput" type="text" maxlength="40" placeholder="映画タイトルを入力して検索" style="flex:1;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:#0f0f14;color:var(--text);font:inherit">
+          <button class="btn btn-primary btn-sm" id="slotSearchGo" type="button" style="padding:10px 14px;border-radius:12px">検索</button>
+        </div>
+      </div>
+      <div id="slotSearchStatus" style="font-size:.82rem;color:var(--muted);margin-top:8px;min-height:1.2em"></div>
       <div id="slotSearchResults" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:10px"></div>
     </div>
 
@@ -93,23 +100,23 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
   if (window.EigaKitThemes) {
     window.EigaKitThemes.mountPicker(document.getElementById('themePicker'), { initial: theme.id, onChange: (t) => { theme = t; render(); } });
   }
+  let activeSlot = null;
 
+  const slotEls = [];
   function makeSlot(i){
     const el = document.createElement('div');
     el.className = 'slot';
     el.innerHTML = `
         <div class="slot-img">
-        <div class="ph"><strong>${i+1}</strong>「映画を検索」で<br>ポスターを追加</div>
+        <div class="ph"><strong>${i+1}</strong>タップで画像追加<br>または下の検索</div>
         <input type="file" accept="image/*" aria-label="映画${i+1}の画像をアップロード">
       </div>
       <div class="slot-body">
-        <label for="t${i}">映画${i+1}</label>
-        <input id="t${i}" type="text" maxlength="40" placeholder="タイトル">
-        <button type="button" class="btn btn-primary btn-sm search-btn" style="margin-top:8px;width:100%;padding:9px 10px;font-size:.8rem;border-radius:10px">映画を検索</button>
+        <button type="button" class="btn btn-primary btn-sm search-btn" style="width:100%;padding:10px 10px;font-size:.82rem;border-radius:10px">映画を検索</button>
       </div>`;
     const file = el.querySelector('input[type=file]');
-    const text = el.querySelector('input[type=text]');
     const imgBox = el.querySelector('.slot-img');
+    const searchBtn = el.querySelector('.search-btn');
     file.addEventListener('change', async (e) => {
       const f = e.target.files && e.target.files[0];
       if(!f) return;
@@ -124,44 +131,56 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
       imgEl.alt = state[i].title || `映画${i+1}`;
       render();
     });
-    text.addEventListener('input', (e) => { state[i].title = e.target.value; render(); });
-    text.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); searchBtn.click(); } });
-    const searchBtn = el.querySelector('.search-btn');
-    searchBtn.addEventListener('click', async () => {
-      if (!window.EigaKitMovieSearch) return;
-      const q = text.value.trim();
-      const container = document.getElementById('slotSearchResults');
+    searchBtn.addEventListener('click', () => {
+      activeSlot = i;
+      const box = document.getElementById('slotSearchBox');
+      const label = document.getElementById('slotSearchLabel');
+      const input = document.getElementById('slotSearchInput');
       const status = document.getElementById('slotSearchStatus');
-      status.textContent = `スロット ${i+1} の検索結果`;
-      await window.EigaKitMovieSearch.inlineSearch({
-        query: q,
-        container,
-        status,
-        onPick: async (movie) => {
-          state[i].title = movie.year ? `${movie.title} (${movie.year})` : movie.title;
-          text.value = state[i].title;
-          if (movie.poster) {
-            try {
-              const im = await loadImage(movie.poster, 'anonymous');
-              state[i].img = im;
-              state[i].src = movie.poster;
-              imgBox.querySelector('.ph')?.remove();
-              let imgEl = imgBox.querySelector('img');
-              if(!imgEl){ imgEl = document.createElement('img'); imgBox.appendChild(imgEl); }
-              imgEl.crossOrigin = 'anonymous';
-              imgEl.src = movie.poster;
-              imgEl.alt = state[i].title;
-            } catch (e) { console.warn('poster load failed', e); }
-          }
-          container.innerHTML = '';
-          status.textContent = `スロット ${i+1} に「${movie.title}」を設定しました`;
-          render();
-        }
-      });
+      const container = document.getElementById('slotSearchResults');
+      box.style.display = 'block';
+      label.textContent = `スロット ${i+1} に入れる映画を検索`;
+      input.value = '';
+      container.innerHTML = '';
+      status.textContent = '';
+      box.scrollIntoView({behavior:'smooth', block:'nearest'});
+      input.focus();
     });
     slotsEl.appendChild(el);
+    slotEls.push({el, imgBox});
   }
   for(let i=0;i<9;i++) makeSlot(i);
+
+  async function runSlotSearch() {
+    if (activeSlot == null || !window.EigaKitMovieSearch) return;
+    const i = activeSlot;
+    const q = document.getElementById('slotSearchInput').value.trim();
+    const container = document.getElementById('slotSearchResults');
+    const status = document.getElementById('slotSearchStatus');
+    status.scrollIntoView({behavior:'smooth', block:'nearest'});
+    await window.EigaKitMovieSearch.inlineSearch({
+      query: q, container, status,
+      onPick: async (movie) => {
+        state[i].title = movie.year ? `${movie.title} (${movie.year})` : movie.title;
+        if (movie.poster) {
+          try {
+            const im = await loadImage(movie.poster, 'anonymous');
+            state[i].img = im; state[i].src = movie.poster;
+            const imgBox = slotEls[i].imgBox;
+            imgBox.querySelector('.ph')?.remove();
+            let imgEl = imgBox.querySelector('img');
+            if(!imgEl){ imgEl = document.createElement('img'); imgBox.appendChild(imgEl); }
+            imgEl.crossOrigin = 'anonymous'; imgEl.src = movie.poster; imgEl.alt = state[i].title;
+          } catch (e) { console.warn('poster load failed', e); }
+        }
+        container.innerHTML = '';
+        status.textContent = `スロット ${i+1} に「${movie.title}」を設定しました`;
+        render();
+      }
+    });
+  }
+  document.getElementById('slotSearchGo').addEventListener('click', runSlotSearch);
+  document.getElementById('slotSearchInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); runSlotSearch(); } });
 
   function readAsDataURL(file){
     return new Promise((res, rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
@@ -230,19 +249,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
 
     ctx.save(); roundRect(x,y,w,h,18); ctx.strokeStyle=t.frame; ctx.lineWidth=2; ctx.stroke(); ctx.restore();
 
-    const title = s.title.trim() || `映画 ${i+1}`;
-    ctx.save();
-    ctx.fillStyle = t.text;
-    ctx.textAlign='center'; ctx.textBaseline='bottom';
-    const fontSpec = `700 34px ${t.fontHead}`;
-    const lines = wrapTitle(title, w-44, fontSpec, 2);
-    const lh = 42;
-    lines.forEach((ln, li) => {
-      const yy = y+h - 24 - (lines.length-1-li)*lh;
-      ctx.font = fontSpec;
-      ctx.fillText(ln, x+w/2, yy);
-    });
-    ctx.restore();
+    // タイトル表示なし（ポスターのみ）
   }
 
   function render(){

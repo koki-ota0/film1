@@ -150,6 +150,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
     const q = newText.value.trim();
     const container = document.getElementById('searchResults');
     const status = document.getElementById('searchStatus');
+    status.scrollIntoView({behavior:'smooth',block:'nearest'});
     await window.EigaKitMovieSearch.inlineSearch({
       query: q,
       container,
@@ -251,10 +252,26 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
 
   function draw(){
     const t = theme;
-    const W=1080; const pad=44; const labelW=130; const rowH=170; const headerH=170; const footerH=70;
-    const tiersH = TIERS.length * rowH;
-    const poolItems = tierItems('pool');
-    const poolH = poolItems.length ? 160 : 0;
+    const W=1080; const pad=44; const labelW=130; const headerH=170; const footerH=70;
+    const iW=96, iH=144, igap=10, rowPad=12;
+    const boardW=W-pad*2;
+    const contentW=boardW-labelW-28;
+
+    function rowsFor(count, w=iW, h=iH){
+      const perRow=Math.max(1, Math.floor((contentW+igap)/(w+igap)));
+      const r=Math.max(1, Math.ceil(count/perRow));
+      return {rows:r, perRow, h: r*h + (r-1)*igap + rowPad*2};
+    }
+
+    const tierLayouts = TIERS.map(tr=>{
+      const count=tierItems(tr.id).length;
+      return {tr, ...rowsFor(count)};
+    });
+    const tiersH = tierLayouts.reduce((a,b)=>a+b.h,0);
+    const poolItemsList = tierItems('pool');
+    const pW=80,pH=120;
+    const poolLayout = rowsFor(poolItemsList.length, pW, pH);
+    const poolH = poolItemsList.length ? (40 + poolLayout.h) : 0;
     const H = Math.max(900, headerH + tiersH + poolH + footerH + pad*2);
     canvas.width=W; canvas.height=H;
 
@@ -268,49 +285,51 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
     ctx.fillStyle=t.text; ctx.font=`700 56px ${t.fontHead}`;
     ctx.fillText((titleInput.value.trim()||'映画ティア表'), W/2, 78);
 
-    const boardX=pad, boardY=headerH, boardW=W-pad*2;
+    const boardX=pad, boardY=headerH;
     ctx.save(); rr(boardX,boardY,boardW,tiersH,16); ctx.clip();
-    TIERS.forEach((tr, idx)=>{
-      const y=boardY+idx*rowH;
+    let y = boardY;
+    tierLayouts.forEach((lay)=>{
+      const tr=lay.tr, rowH=lay.h;
       ctx.fillStyle=tr.color; ctx.fillRect(boardX,y,labelW,rowH);
-      ctx.fillStyle='#151515'; ctx.font=`800 56px ${t.fontHead}`; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillStyle='#151515'; ctx.font=`800 ${tr.id.length>1?46:56}px ${t.fontHead}`; ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillText(tr.id, boardX+labelW/2, y+rowH/2+2);
       ctx.fillStyle=t.bg[1]||'#181820'; ctx.fillRect(boardX+labelW,y,boardW-labelW,rowH);
       const its = tierItems(tr.id);
-      const iW=96, iH=144, igap=10; let ix=boardX+labelW+14, iy=y+(rowH-iH)/2;
+      let ix=boardX+labelW+14, iy=y+rowPad, col=0;
       for(const it of its){
-        if(ix+isz > boardX+boardW-10) { ix=boardX+labelW+14; }
+        if(col>=lay.perRow){ col=0; ix=boardX+labelW+14; iy+=iH+igap; }
         ctx.save(); rr(ix,iy,iW,iH,10); ctx.clip();
         if(it.type==='image' && it.img){
-          const iw=it.img.naturalWidth, ih=it.img.naturalHeight; const r=Math.max(iW/iw,iH/ih); const nw=iw*r, nh=ih*r;
+          const iw2=it.img.naturalWidth, ih2=it.img.naturalHeight; const r=Math.max(iW/iw2,iH/ih2); const nw=iw2*r, nh=ih2*r;
           ctx.drawImage(it.img, ix+(iW-nw)/2, iy+(iH-nh)/2, nw, nh);
         } else {
           ctx.fillStyle=t.bg[2]||'#2a2a38'; ctx.fillRect(ix,iy,iW,iH);
           ctx.fillStyle=t.text; ctx.textAlign='center'; ctx.textBaseline='middle';
           const font=`700 20px ${t.fontBody}`;
           const lines=wrapText(it.text||'', iW-12, font, 4);
-          const lh=24; const startY=iy+iH/2 - (lines.length-1)*lh/2;
-          ctx.font=font; lines.forEach((ln,li)=>ctx.fillText(ln, ix+iW/2, startY+li*lh));
+          const lh=24; const startY2=iy+iH/2 - (lines.length-1)*lh/2;
+          ctx.font=font; lines.forEach((ln,li)=>ctx.fillText(ln, ix+iW/2, startY2+li*lh));
         }
         ctx.restore();
         ctx.strokeStyle=t.frame; ctx.lineWidth=2; rr(ix,iy,iW,iH,10); ctx.stroke();
-        ix += iW+igap;
+        ix += iW+igap; col++;
       }
       ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(boardX,y+rowH); ctx.lineTo(boardX+boardW,y+rowH); ctx.stroke();
+      y += rowH;
     });
     ctx.restore();
     ctx.strokeStyle=t.frame; ctx.lineWidth=2; rr(boardX,boardY,boardW,tiersH,16); ctx.stroke();
 
-    if(poolItems.length){
+    if(poolItemsList.length){
       const py = boardY+tiersH+24;
       ctx.fillStyle=t.muted; ctx.font=`600 22px ${t.fontBody}`; ctx.textAlign='left'; ctx.textBaseline='top';
       ctx.fillText('未分類', boardX, py);
-      const pW=80, pH=120, igap=10; let ix=boardX, iy=py+36;
-      for(const it of poolItems){
-        if(ix+pW>boardX+boardW){ ix=boardX; iy+=pH+igap; }
+      let ix=boardX, iy=py+36, col=0;
+      for(const it of poolItemsList){
+        if(col>=poolLayout.perRow){ col=0; ix=boardX; iy+=pH+igap; }
         ctx.save(); rr(ix,iy,pW,pH,10); ctx.clip();
         if(it.type==='image' && it.img){
-          const iw=it.img.naturalWidth, ih=it.img.naturalHeight; const r=Math.max(pW/iw,pH/ih); const nw=iw*r, nh=ih*r;
+          const iw2=it.img.naturalWidth, ih2=it.img.naturalHeight; const r=Math.max(pW/iw2,pH/ih2); const nw=iw2*r, nh=ih2*r;
           ctx.drawImage(it.img, ix+(pW-nw)/2, iy+(pH-nh)/2, nw, nh);
         } else {
           ctx.fillStyle=t.bg[2]||'#2a2a38'; ctx.fillRect(ix,iy,pW,pH);
@@ -320,7 +339,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
         }
         ctx.restore();
         ctx.strokeStyle=t.frame; ctx.lineWidth=2; rr(ix,iy,pW,pH,10); ctx.stroke();
-        ix += pW+igap;
+        ix += pW+igap; col++;
       }
     }
 
