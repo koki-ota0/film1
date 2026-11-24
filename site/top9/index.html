@@ -21,10 +21,12 @@
 .slot-img .ph strong{display:block;font-size:1.6rem;color:rgba(232,196,104,.7);margin-bottom:6px;font-family:var(--serif)}
 .slot-img input{position:absolute;inset:0;opacity:0;cursor:pointer}
 .slot-img .ctrl{position:absolute;top:6px;right:6px;display:flex;gap:4px;z-index:3}
-.slot-img .ctrl button{width:28px;height:28px;border-radius:8px;border:none;background:rgba(0,0,0,.62);color:#fff;font-size:14px;cursor:pointer;line-height:1}
+.slot-img .ctrl button{width:30px;height:30px;border-radius:8px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.62);color:#fff;font-size:14px;cursor:pointer;line-height:1;backdrop-filter:blur(4px)}
 .slot-img .ctrl button:active{transform:scale(.96)}
-.slot.dragging{opacity:.45}
-.slot-img .drag-hint{position:absolute;left:6px;top:6px;z-index:3;background:rgba(0,0,0,.55);color:#fff;font-size:11px;padding:4px 6px;border-radius:7px}
+.slot-img .ctrl button:disabled{opacity:.28;cursor:default}
+.slot.dragging{opacity:.35;transform:scale(.97)}
+.slot.drag-over .slot-img{outline:3px solid var(--accent,#e8c468);outline-offset:-3px}
+.slot-img .drag-hint{position:absolute;left:6px;bottom:6px;z-index:3;background:rgba(0,0,0,.58);color:#fff;font-size:11px;padding:4px 8px;border-radius:7px;backdrop-filter:blur(4px)}
 .slot-body{padding:12px}
 .slot-body label{display:block;font-size:.72rem;color:var(--muted);font-weight:700;margin-bottom:4px}
 .slot-body input[type=text]{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:#0f0f14;color:var(--text);font:inherit;font-size:.95rem}
@@ -122,14 +124,20 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
       imgBox.appendChild(imgEl);
       const ctrl = document.createElement('div');
       ctrl.className = 'ctrl';
-      ctrl.innerHTML = `<button type="button" data-act="clear" aria-label="削除">×</button>`;
+      const prevDisabled = i === 0 ? 'disabled' : '';
+      const nextDisabled = i === 8 ? 'disabled' : '';
+      ctrl.innerHTML = `<button type="button" data-act="prev" aria-label="前へ" ${prevDisabled}>←</button><button type="button" data-act="next" aria-label="次へ" ${nextDisabled}>→</button><button type="button" data-act="clear" aria-label="削除">×</button>`;
       ctrl.addEventListener('click', (e) => {
         e.stopPropagation(); e.preventDefault();
-        const act = e.target.closest('button')?.dataset.act;
-        if (act === 'clear') { clearSlot(i); }
+        const btn = e.target.closest('button');
+        const act = btn?.dataset.act;
+        if (!act || btn.disabled) return;
+        if (act === 'clear') clearSlot(i);
+        if (act === 'prev') moveSlot(i, i - 1);
+        if (act === 'next') moveSlot(i, i + 1);
       });
       imgBox.appendChild(ctrl);
-      const hint = document.createElement('div'); hint.className='drag-hint'; hint.textContent='長押しで並べ替え';
+      const hint = document.createElement('div'); hint.className='drag-hint'; hint.textContent='長押しドラッグでも移動';
       imgBox.appendChild(hint);
       file.style.pointerEvents = 'none';
     } else {
@@ -147,6 +155,13 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
   function swapSlots(a,b){
     const tmp = state[a]; state[a] = state[b]; state[b] = tmp;
     refreshSlot(a); refreshSlot(b); render();
+  }
+  function moveSlot(from, to){
+    if (to < 0 || to > 8 || from === to) return;
+    const [item] = state.splice(from, 1);
+    state.splice(to, 0, item);
+    for (let k = 0; k < 9; k++) refreshSlot(k);
+    render();
   }
 
   function makeSlot(i){
@@ -188,29 +203,35 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
     });
 
     // long-press drag reorder
-    let pressTimer=null, dragging=false, startX=0, startY=0;
+    let pressTimer=null, dragging=false, startX=0, startY=0, dragIdx=-1, overIdx=-1;
+    const clearOver=()=>{ slotEls.forEach(s=>s.el.classList.remove('drag-over')); overIdx=-1; };
     imgBox.addEventListener('pointerdown', (e)=>{
       if (e.target.closest('.ctrl') || e.target.tagName==='INPUT') return;
       if (!state[i].src) return;
-      startX=e.clientX; startY=e.clientY;
-      pressTimer = setTimeout(()=>{ dragging=true; el.classList.add('dragging'); imgBox.style.touchAction='none'; try{imgBox.setPointerCapture(e.pointerId);}catch{} }, 350);
+      startX=e.clientX; startY=e.clientY; dragIdx=i;
+      pressTimer = setTimeout(()=>{ dragging=true; el.classList.add('dragging'); imgBox.style.touchAction='none'; try{imgBox.setPointerCapture(e.pointerId);}catch{} }, 280);
     });
     imgBox.addEventListener('pointermove', (e)=>{
       if (!pressTimer && !dragging) return;
-      if (!dragging && (Math.abs(e.clientX-startX)>8 || Math.abs(e.clientY-startY)>8)) { clearTimeout(pressTimer); pressTimer=null; }
+      if (!dragging && (Math.abs(e.clientX-startX)>8 || Math.abs(e.clientY-startY)>8)) { clearTimeout(pressTimer); pressTimer=null; return; }
+      if (!dragging) return;
+      const hit = document.elementFromPoint(e.clientX,e.clientY);
+      const slot = hit?.closest('.slot');
+      clearOver();
+      if (slot) {
+        const j = slotEls.findIndex(x=>x.el===slot);
+        if (j!==-1 && j!==dragIdx) { overIdx=j; slotEls[j].el.classList.add('drag-over'); }
+      }
     });
     imgBox.addEventListener('pointerup', (e)=>{
       if (pressTimer) { clearTimeout(pressTimer); pressTimer=null; }
       if (!dragging) return;
       dragging=false; el.classList.remove('dragging'); imgBox.style.touchAction='';
-      const hit = document.elementFromPoint(e.clientX,e.clientY);
-      const slot = hit?.closest('.slot');
-      if (slot) {
-        const j = slotEls.findIndex(x=>x.el===slot);
-        if (j!==-1 && j!==i) swapSlots(i,j);
-      }
+      const j = overIdx;
+      clearOver();
+      if (j!==-1 && j!==dragIdx) moveSlot(dragIdx,j);
     });
-    imgBox.addEventListener('pointercancel', ()=>{ if(pressTimer){clearTimeout(pressTimer);pressTimer=null;} dragging=false; el.classList.remove('dragging'); imgBox.style.touchAction=''; });
+    imgBox.addEventListener('pointercancel', ()=>{ if(pressTimer){clearTimeout(pressTimer);pressTimer=null;} dragging=false; el.classList.remove('dragging'); imgBox.style.touchAction=''; clearOver(); });
     imgBox.addEventListener('contextmenu', (e)=>{ if(state[i].src) e.preventDefault(); });
 
     slotsEl.appendChild(el);
