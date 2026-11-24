@@ -55,6 +55,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
 
   <div class="layout">
     <div class="panel">
+      <div id="themePicker"></div>
       <div class="field" style="margin-bottom:14px">
         <label for="boardTitle" style="display:block;font-size:.78rem;color:var(--muted);font-weight:700;margin-bottom:6px">ティア表のタイトル</label>
         <input id="boardTitle" type="text" maxlength="30" value="映画ティア表" style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:#0f0f14;color:var(--text);font:inherit">
@@ -92,6 +93,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
 
 <script src="../../assets/eigakit-config.js"></script>
 <script src="../../assets/movie-search.js"></script>
+<script src="../../assets/themes.js"></script>
 <script>
 (() => {
   const TIERS = [
@@ -114,6 +116,10 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
   let items = []; // {id,type,text,src,img,tier}
   let selectedId = null;
   let nextId = 1;
+  let theme = (window.EigaKitThemes && window.EigaKitThemes.byId['cinema-dark']) || {bg:['#191610','#0b0b0f','#121018'],accent:'#e8c468',accent2:'#ff7a59',text:'#f2efe8',muted:'rgba(242,239,232,.62)',frame:'rgba(232,196,104,.22)',fontHead:'Georgia,serif',fontBody:'system-ui,sans-serif'};
+  if (window.EigaKitThemes) {
+    window.EigaKitThemes.mountPicker(document.getElementById('themePicker'), { initial: theme.id, onChange: (t) => { theme = t; render(); } });
+  }
 
   function uid(){ return nextId++; }
 
@@ -234,64 +240,60 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
   function rr(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 
   function draw(){
-    const W=1080; const pad=44; const labelW=130; const rowH=140; const gap=0; const headerH=170; const footerH=70;
+    const t = theme;
+    const W=1080; const pad=44; const labelW=130; const rowH=140; const headerH=170; const footerH=70;
     const tiersH = TIERS.length * rowH;
     const poolItems = tierItems('pool');
     const poolH = poolItems.length ? 160 : 0;
     const H = Math.max(900, headerH + tiersH + poolH + footerH + pad*2);
     canvas.width=W; canvas.height=H;
 
-    // bg
-    const bg = ctx.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#191610'); bg.addColorStop(.45,'#0b0b0f'); bg.addColorStop(1,'#121018');
+    const bg = ctx.createLinearGradient(0,0,0,H); bg.addColorStop(0,t.bg[0]); bg.addColorStop(.45,t.bg[1]||t.bg[0]); bg.addColorStop(1,t.bg[2]||t.bg[1]||t.bg[0]);
     ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-    // title
-    ctx.fillStyle='#e8c468'; ctx.font='700 22px "Hiragino Sans","Noto Sans JP",sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
+    const rg = ctx.createRadialGradient(850,100,10,850,100,500); rg.addColorStop(0,t.accent+'22'); rg.addColorStop(1,t.accent+'00');
+    ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
+
+    ctx.fillStyle=t.accent; ctx.font=`700 22px ${t.fontBody}`; ctx.textAlign='center'; ctx.textBaseline='top';
     ctx.fillText('TIER LIST', W/2, 46);
-    ctx.fillStyle='#f2efe8'; ctx.font='700 56px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",Georgia,serif';
+    ctx.fillStyle=t.text; ctx.font=`700 56px ${t.fontHead}`;
     ctx.fillText((titleInput.value.trim()||'映画ティア表'), W/2, 78);
 
     const boardX=pad, boardY=headerH, boardW=W-pad*2;
-    // board border
     ctx.save(); rr(boardX,boardY,boardW,tiersH,16); ctx.clip();
-    TIERS.forEach((t, idx)=>{
+    TIERS.forEach((tr, idx)=>{
       const y=boardY+idx*rowH;
-      // label
-      ctx.fillStyle=t.color; ctx.fillRect(boardX,y,labelW,rowH);
-      ctx.fillStyle='#151515'; ctx.font='800 56px "Hiragino Mincho ProN","Yu Mincho","Georgia",serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText(t.id, boardX+labelW/2, y+rowH/2+2);
-      // items area
-      ctx.fillStyle='#181820'; ctx.fillRect(boardX+labelW,y,boardW-labelW,rowH);
-      // items
-      const its = tierItems(t.id);
+      ctx.fillStyle=tr.color; ctx.fillRect(boardX,y,labelW,rowH);
+      ctx.fillStyle='#151515'; ctx.font=`800 56px ${t.fontHead}`; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(tr.id, boardX+labelW/2, y+rowH/2+2);
+      ctx.fillStyle=t.bg[1]||'#181820'; ctx.fillRect(boardX+labelW,y,boardW-labelW,rowH);
+      const its = tierItems(tr.id);
       const isz=104, igap=10; let ix=boardX+labelW+14, iy=y+(rowH-isz)/2;
       for(const it of its){
-        if(ix+isz > boardX+boardW-10) { ix=boardX+labelW+14; /* overflow - keep simple: clip */ }
+        if(ix+isz > boardX+boardW-10) { ix=boardX+labelW+14; }
         ctx.save(); rr(ix,iy,isz,isz,10); ctx.clip();
         if(it.type==='image' && it.img){
           const iw=it.img.naturalWidth, ih=it.img.naturalHeight; const r=Math.max(isz/iw,isz/ih); const nw=iw*r, nh=ih*r;
           ctx.drawImage(it.img, ix+(isz-nw)/2, iy+(isz-nh)/2, nw, nh);
         } else {
-          ctx.fillStyle='#2a2a38'; ctx.fillRect(ix,iy,isz,isz);
-          ctx.fillStyle='#f2efe8'; ctx.textAlign='center'; ctx.textBaseline='middle';
-          const font='700 20px "Hiragino Sans","Noto Sans JP",sans-serif';
+          ctx.fillStyle=t.bg[2]||'#2a2a38'; ctx.fillRect(ix,iy,isz,isz);
+          ctx.fillStyle=t.text; ctx.textAlign='center'; ctx.textBaseline='middle';
+          const font=`700 20px ${t.fontBody}`;
           const lines=wrapText(it.text||'', isz-12, font, 3);
           const lh=24; const startY=iy+isz/2 - (lines.length-1)*lh/2;
           ctx.font=font; lines.forEach((ln,li)=>ctx.fillText(ln, ix+isz/2, startY+li*lh));
         }
         ctx.restore();
-        ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.lineWidth=2; rr(ix,iy,isz,isz,10); ctx.stroke();
+        ctx.strokeStyle=t.frame; ctx.lineWidth=2; rr(ix,iy,isz,isz,10); ctx.stroke();
         ix += isz+igap;
       }
-      // row separator
-      ctx.strokeStyle='#101015'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(boardX,y+rowH); ctx.lineTo(boardX+boardW,y+rowH); ctx.stroke();
+      ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(boardX,y+rowH); ctx.lineTo(boardX+boardW,y+rowH); ctx.stroke();
     });
     ctx.restore();
-    ctx.strokeStyle='rgba(255,255,255,.1)'; ctx.lineWidth=2; rr(boardX,boardY,boardW,tiersH,16); ctx.stroke();
+    ctx.strokeStyle=t.frame; ctx.lineWidth=2; rr(boardX,boardY,boardW,tiersH,16); ctx.stroke();
 
-    // pool (if any) - draw below
     if(poolItems.length){
       const py = boardY+tiersH+24;
-      ctx.fillStyle='rgba(242,239,232,.55)'; ctx.font='600 22px "Hiragino Sans","Noto Sans JP",sans-serif'; ctx.textAlign='left'; ctx.textBaseline='top';
+      ctx.fillStyle=t.muted; ctx.font=`600 22px ${t.fontBody}`; ctx.textAlign='left'; ctx.textBaseline='top';
       ctx.fillText('未分類', boardX, py);
       const isz=88, igap=10; let ix=boardX, iy=py+36;
       for(const it of poolItems){
@@ -301,24 +303,24 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
           const iw=it.img.naturalWidth, ih=it.img.naturalHeight; const r=Math.max(isz/iw,isz/ih); const nw=iw*r, nh=ih*r;
           ctx.drawImage(it.img, ix+(isz-nw)/2, iy+(isz-nh)/2, nw, nh);
         } else {
-          ctx.fillStyle='#2a2a38'; ctx.fillRect(ix,iy,isz,isz);
-          ctx.fillStyle='#f2efe8'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='700 18px "Hiragino Sans","Noto Sans JP",sans-serif';
-          const lines=wrapText(it.text||'', isz-10, '700 18px "Hiragino Sans","Noto Sans JP",sans-serif', 3);
+          ctx.fillStyle=t.bg[2]||'#2a2a38'; ctx.fillRect(ix,iy,isz,isz);
+          ctx.fillStyle=t.text; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font=`700 18px ${t.fontBody}`;
+          const lines=wrapText(it.text||'', isz-10, `700 18px ${t.fontBody}`, 3);
           const lh=22; const sy=iy+isz/2-(lines.length-1)*lh/2; lines.forEach((ln,li)=>ctx.fillText(ln,ix+isz/2,sy+li*lh));
         }
         ctx.restore();
-        ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.lineWidth=2; rr(ix,iy,isz,isz,10); ctx.stroke();
+        ctx.strokeStyle=t.frame; ctx.lineWidth=2; rr(ix,iy,isz,isz,10); ctx.stroke();
         ix += isz+igap;
       }
     }
 
-    ctx.fillStyle='rgba(242,239,232,.42)'; ctx.textAlign='center'; ctx.textBaseline='bottom';
-    ctx.font='500 24px "Hiragino Sans","Noto Sans JP",sans-serif';
+    ctx.fillStyle=t.muted; ctx.textAlign='center'; ctx.textBaseline='bottom';
+    ctx.font=`500 24px ${t.fontBody}`;
     ctx.fillText('made with EigaKit', W/2, H-28);
 
-    const t = encodeURIComponent(`${titleInput.value.trim()||'映画ティア表'} を作った！\n\n#映画ティア表 #EigaKit #映画好きと繋がりたい`);
+    const tt = encodeURIComponent(`${titleInput.value.trim()||'映画ティア表'} を作った！\n\n#映画ティア表 #EigaKit #映画好きと繋がりたい`);
     const url = encodeURIComponent(location.href.replace(/\/app\/tier\/.*$/, '/app/tier/'));
-    share.href = `https://x.com/intent/post?text=${t}&url=${url}`;
+    share.href = `https://x.com/intent/post?text=${tt}&url=${url}`;
   }
 
   document.getElementById('dl').addEventListener('click', ()=>{ const a=document.createElement('a'); a.download='eigakit-tier.png'; a.href=canvas.toDataURL('image/png'); a.click(); });
