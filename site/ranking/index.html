@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>映画ランキングカード｜EigaKit</title>
+<style>
+:root{--bg:#0b0b0f;--panel:#17171e;--line:#2a2a35;--text:#f2efe8;--muted:#a8a39a;--accent:#e8c468;--sans:"Hiragino Sans","Noto Sans JP","Yu Gothic",system-ui,sans-serif;--serif:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",Georgia,serif}
+*,*::before,*::after{box-sizing:border-box} body{margin:0;background:radial-gradient(900px 500px at 10% -10%,#2a2112,transparent 60%),var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6}
+.wrap{width:min(1100px,calc(100% - 32px));margin:0 auto;padding:28px 0 40px}
+h1{font-family:var(--serif);font-size:clamp(1.8rem,5vw,3rem);margin:.2em 0 .2em;line-height:1.2}
+.lead{color:var(--muted);margin:0 0 24px}
+.layout{display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start}
+.panel{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:22px}
+.panel h2{font-size:1rem;margin:0 0 14px;color:#ddd5c8}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.78rem;color:var(--muted);font-weight:700;margin-bottom:6px}
+.field input,.field textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:#0f0f14;color:var(--text);font:inherit}
+.field textarea{min-height:58px;resize:vertical}
+.field input:focus,.field textarea:focus{outline:2px solid rgba(232,196,104,.45);border-color:rgba(232,196,104,.5)}
+.row{display:grid;grid-template-columns:52px 1fr;gap:10px;align-items:start;padding:14px 0;border-top:1px solid rgba(255,255,255,.06)}
+.rank{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font:700 1.1rem var(--serif);background:rgba(232,196,104,.12);color:var(--accent);border:1px solid rgba(232,196,104,.25)}
+.row input{margin-bottom:8px}
+.actions-row{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 16px;border-radius:999px;border:1px solid transparent;font:700 .92rem var(--sans);cursor:pointer;text-decoration:none;transition:transform .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#f0d78a);color:#1a1408}
+.btn-ghost{background:rgba(255,255,255,.04);color:var(--text);border-color:rgba(255,255,255,.12)}
+.btn-sm{padding:9px 14px;font-size:.82rem}
+.preview{position:sticky;top:20px}
+.canvas-wrap{background:#111118;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:12px}
+canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f}
+.stack{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.small{font-size:.78rem;color:var(--muted);margin-top:10px;line-height:1.6}
+@media (max-width:900px){.layout{grid-template-columns:1fr}.preview{position:static}}
+@media (max-width:520px){.panel{padding:16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p style="color:var(--accent);font-weight:700;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;margin:0">EigaKit Template</p>
+  <h1>映画ランキングカード</h1>
+  <p class="lead">今月のベスト、今年のベスト。あなたのランキングを1枚のカードにしてXへ。</p>
+
+  <div class="layout">
+    <div class="panel">
+      <div class="field">
+        <label for="heading">カードの見出し</label>
+        <input id="heading" type="text" maxlength="30" value="2026年ベスト映画">
+      </div>
+      <div class="field">
+        <label for="sub">サブタイトル（任意）</label>
+        <input id="sub" type="text" maxlength="40" placeholder="例：上半期に観た作品から / @your_name">
+      </div>
+      <h2>ランキング</h2>
+      <div id="rows"></div>
+      <div class="actions-row">
+        <button class="btn btn-ghost btn-sm" id="add" type="button">+ 項目を追加</button>
+        <button class="btn btn-ghost btn-sm" id="remove" type="button">− 最後を削除</button>
+      </div>
+    </div>
+
+    <div class="preview">
+      <div class="panel">
+        <h2>プレビュー</h2>
+        <div class="canvas-wrap"><canvas id="c" width="1080" height="1350"></canvas></div>
+        <div class="stack">
+          <button class="btn btn-primary" id="dl" type="button">画像を保存</button>
+          <a class="btn btn-ghost" id="share" href="#" target="_blank" rel="noopener">Xでシェア</a>
+        </div>
+        <p class="small">「Xでシェア」はテキストとリンクを開きます。画像は保存してから添付してください。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const rowsEl = document.getElementById('rows');
+  const heading = document.getElementById('heading');
+  const sub = document.getElementById('sub');
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const share = document.getElementById('share');
+  const W=1080,H=1350;
+  let items = [
+    {title:'', comment:''},
+    {title:'', comment:''},
+    {title:'', comment:''},
+    {title:'', comment:''},
+    {title:'', comment:''},
+  ];
+
+  function escapeHtml(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+  function renderRows(){
+    rowsEl.innerHTML = items.map((it,i)=>`
+      <div class="row">
+        <div class="rank">${i+1}</div>
+        <div>
+          <div class="field" style="margin-bottom:8px"><input data-i="${i}" data-k="title" type="text" maxlength="40" placeholder="映画タイトル" value="${escapeHtml(it.title)}"></div>
+          <div class="field" style="margin:0"><input data-i="${i}" data-k="comment" type="text" maxlength="60" placeholder="ひとこと（任意）" value="${escapeHtml(it.comment)}"></div>
+        </div>
+      </div>`).join('');
+    rowsEl.querySelectorAll('input').forEach(inp=>{
+      inp.addEventListener('input', e=>{
+        const i=+e.target.dataset.i, k=e.target.dataset.k;
+        items[i][k]=e.target.value; draw();
+      });
+    });
+  }
+
+  document.getElementById('add').addEventListener('click', ()=>{ if(items.length<10){ items.push({title:'',comment:''}); renderRows(); draw(); } });
+  document.getElementById('remove').addEventListener('click', ()=>{ if(items.length>1){ items.pop(); renderRows(); draw(); } });
+  heading.addEventListener('input', draw); sub.addEventListener('input', draw);
+
+  function rr(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+  function wrap(text, maxW, font, maxLines=2){
+    ctx.font=font;
+    const chars=[...text]; let lines=[], line='';
+    for(const ch of chars){
+      const test=line+ch;
+      if(ctx.measureText(test).width>maxW && line){ lines.push(line); line=ch; if(lines.length===maxLines-1) break; }
+      else line=test;
+    }
+    const consumed = lines.join('').length;
+    let rest = chars.slice(consumed).join('');
+    if(lines.length < maxLines) lines.push(rest);
+    else { let last=lines[maxLines-1]; while(ctx.measureText(last+'…').width>maxW && last.length) last=last.slice(0,-1); if(chars.slice(consumed+last.length).join('').length) last+='…'; lines[maxLines-1]=last; }
+    return lines;
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    const bg = ctx.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0,'#191610'); bg.addColorStop(.4,'#0b0b0f'); bg.addColorStop(1,'#121018');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+    const rg = ctx.createRadialGradient(850,100,10,850,100,500); rg.addColorStop(0,'rgba(232,196,104,.12)'); rg.addColorStop(1,'rgba(232,196,104,0)');
+    ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
+
+    // frame
+    ctx.strokeStyle='rgba(232,196,104,.22)'; ctx.lineWidth=2; rr(36,36,W-72,H-72,28); ctx.stroke();
+
+    // heading
+    ctx.fillStyle='#e8c468'; ctx.font='700 24px "Hiragino Sans","Noto Sans JP",sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText('MOVIE RANKING', W/2, 72);
+
+    ctx.fillStyle='#f2efe8'; ctx.font='700 62px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",Georgia,serif';
+    const head = heading.value.trim() || '映画ランキング';
+    const headLines = wrap(head, W-140, '700 62px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",Georgia,serif', 2);
+    headLines.forEach((ln,i)=>ctx.fillText(ln, W/2, 112 + i*72));
+    let y = 112 + headLines.length*72 + 10;
+
+    const subText = sub.value.trim();
+    if(subText){ ctx.fillStyle='rgba(242,239,232,.62)'; ctx.font='500 28px "Hiragino Sans","Noto Sans JP",sans-serif'; ctx.fillText(subText, W/2, y); y += 52; }
+    y += 20;
+
+    // list
+    const left = 84, right = W-84, rowH = Math.min(150, Math.floor((H - y - 120) / items.length));
+    items.forEach((it, i) => {
+      const ry = y + i*rowH;
+      // separator
+      ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(left, ry); ctx.lineTo(right, ry); ctx.stroke();
+      // rank
+      const rankColor = i===0 ? '#e8c468' : i===1 ? '#d4d0c8' : i===2 ? '#d49a6a' : 'rgba(242,239,232,.55)';
+      ctx.fillStyle=rankColor; ctx.textAlign='left'; ctx.textBaseline='middle';
+      ctx.font='700 54px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",Georgia,serif';
+      ctx.fillText(String(i+1), left, ry + rowH/2 - (it.comment.trim()?14:0));
+      // title
+      ctx.fillStyle='#f2efe8'; ctx.font='700 38px "Hiragino Sans","Noto Sans JP",sans-serif';
+      const title = it.title.trim() || '（未入力）';
+      const tLines = wrap(title, right-left-90, '700 38px "Hiragino Sans","Noto Sans JP",sans-serif', 1);
+      ctx.fillText(tLines[0], left+72, ry + rowH/2 - (it.comment.trim()?16:0));
+      // comment
+      if(it.comment.trim()){
+        ctx.fillStyle='rgba(242,239,232,.58)'; ctx.font='400 26px "Hiragino Sans","Noto Sans JP",sans-serif';
+        const cLines = wrap(it.comment.trim(), right-left-90, '400 26px "Hiragino Sans","Noto Sans JP",sans-serif', 1);
+        ctx.fillText(cLines[0], left+72, ry + rowH/2 + 28);
+      }
+    });
+    // bottom line
+    const endY = y + items.length*rowH;
+    ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.beginPath(); ctx.moveTo(left,endY); ctx.lineTo(right,endY); ctx.stroke();
+
+    ctx.fillStyle='rgba(242,239,232,.42)'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+    ctx.font='500 24px "Hiragino Sans","Noto Sans JP",sans-serif';
+    ctx.fillText('made with EigaKit', W/2, H-52);
+
+    const list = items.filter(it=>it.title.trim()).map((it,i)=>`${i+1}. ${it.title.trim()}`).join('\n');
+    const text = encodeURIComponent(`${head}\n\n${list}\n\n#映画ランキング #EigaKit`);
+    const url = encodeURIComponent(location.href.replace(/\/app\/ranking\/.*$/, '/app/ranking/'));
+    share.href = `https://x.com/intent/post?text=${text}&url=${url}`;
+  }
+
+  document.getElementById('dl').addEventListener('click', ()=>{ const a=document.createElement('a'); a.download='eigakit-ranking.png'; a.href=canvas.toDataURL('image/png'); a.click(); });
+  renderRows(); draw();
+})();
+</script>
+</body>
+</html>
