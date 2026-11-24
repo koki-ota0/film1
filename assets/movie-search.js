@@ -3,7 +3,11 @@
   const BASE = 'https://api.themoviedb.org/3';
   const IMG = 'https://image.tmdb.org/t/p/w500';
 
-  function getKey() { try { return localStorage.getItem(KEY_STORE) || ''; } catch { return ''; } }
+  function getBuiltInKey() {
+    try { return (window.EIGAKIT_CONFIG && window.EIGAKIT_CONFIG.tmdbApiKey) || ''; } catch { return ''; }
+  }
+  function getUserKey() { try { return localStorage.getItem(KEY_STORE) || ''; } catch { return ''; } }
+  function getKey() { return getUserKey() || getBuiltInKey(); }
   function setKey(v) { try { localStorage.setItem(KEY_STORE, v.trim()); } catch {} }
 
   function ensureStyle() {
@@ -70,18 +74,18 @@
         <div id="ekms-head">
           <button id="ekms-close" type="button" aria-label="閉じる">×</button>
           <h3>映画を検索</h3>
-          <p>TMDBから映画ポスターを検索します（無料APIキーが必要）。キーはこのブラウザにのみ保存されます。</p>
+          <p>TMDBから映画ポスターを検索します。デフォルトキーが設定されていない場合は、無料APIキーを入力してください。</p>
         </div>
         <div id="ekms-body">
           <div id="ekms-keybox">
-            <label for="ekms-key">TMDB APIキー</label>
-            <input id="ekms-key" type="password" placeholder="TMDB API Key (v3 auth)" autocomplete="off">
+            <label for="ekms-key">TMDB APIキー（任意）</label>
+            <input id="ekms-key" type="password" placeholder="自分のTMDB API Key (v3 auth)" autocomplete="off">
             <div id="ekms-keyrow">
               <button class="ekms-btn primary" id="ekms-save" type="button">保存</button>
               <button class="ekms-btn" id="ekms-clear" type="button">削除</button>
               <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener">無料キーを取得</a>
             </div>
-            <div id="ekms-small">TMDBの無料アカウントでAPIキーを発行できます。キーは端末のlocalStorageに保存され、検索時にTMDBへ送信されます。</div>
+            <div id="ekms-small"></div>
           </div>
           <div id="ekms-row">
             <input id="ekms-q" type="search" placeholder="映画タイトルを入力（例：君の名は。）" maxlength="80">
@@ -102,7 +106,12 @@
     const qInput = backdrop.querySelector('#ekms-q');
     const status = backdrop.querySelector('#ekms-status');
     const results = backdrop.querySelector('#ekms-results');
-    keyInput.value = getKey();
+    const small = backdrop.querySelector('#ekms-small');
+    const builtIn = getBuiltInKey();
+    keyInput.value = getUserKey();
+    small.textContent = builtIn
+      ? 'このサイトにはデフォルトのTMDBキーが設定されています。そのまま検索できます。自分のキーを使いたい場合だけ入力して保存してください（このブラウザにのみ保存されます）。'
+      : 'TMDBの無料アカウントでAPIキーを発行できます。キーは端末のlocalStorageに保存され、検索時にTMDBへ送信されます。';
 
     backdrop.querySelector('#ekms-close').onclick = close;
     backdrop.querySelector('#ekms-save').onclick = () => { setKey(keyInput.value); status.textContent = keyInput.value.trim() ? 'APIキーを保存しました。' : 'APIキーを空にしました。'; };

@@ -23,6 +23,8 @@ jobs:
         with:
           node-version: 20
       - run: npm run build
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       - run: npm run check
       - uses: actions/upload-pages-artifact@v3
         with:

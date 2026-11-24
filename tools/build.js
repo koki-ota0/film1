@@ -347,6 +347,18 @@ mkdirp(DIST);
 
 // copy assets
 if (fs.existsSync(P(ROOT, 'assets'))) copyDir(P(ROOT, 'assets'), P(DIST, 'assets'));
+// Inject runtime config (TMDB key comes from env at build time; never hardcode in git).
+function readLocalTmdbKey() {
+  try {
+    const p = P(ROOT, 'assets', 'eigakit-config.js');
+    if (!fs.existsSync(p)) return '';
+    const m = fs.readFileSync(p, 'utf8').match(/tmdbApiKey\s*:\s*["\']([^"\']+)["\']/);
+    return m ? m[1] : '';
+  } catch { return ''; }
+}
+const tmdbApiKey = (process.env.TMDB_API_KEY || readLocalTmdbKey() || '').trim();
+const cfg = `window.EIGAKIT_CONFIG = {\n  tmdbApiKey: ${JSON.stringify(tmdbApiKey)}\n};\n`;
+write(P(DIST, 'assets', 'eigakit-config.js'), cfg);
 
 // copy app files
 for (const a of apps) {
