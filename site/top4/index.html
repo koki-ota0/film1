@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>好きな映画4選｜EigaKit</title>
+<title>好きな映画9選｜EigaKit</title>
 <style>
 :root{--bg:#0b0b0f;--panel:#17171e;--line:#2a2a35;--text:#f2efe8;--muted:#a8a39a;--accent:#e8c468;--accent2:#ff7a59;--sans:"Hiragino Sans","Noto Sans JP","Yu Gothic",system-ui,sans-serif;--serif:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",Georgia,serif}
 *,*::before,*::after{box-sizing:border-box} body{margin:0;background:radial-gradient(900px 500px at 10% -10%,#2a2112,transparent 60%),var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6}
@@ -13,7 +13,7 @@
 .layout{display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start}
 .panel{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:22px}
 .panel h2{font-size:1rem;margin:0 0 14px;color:#ddd5c8}
-.grid4{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .slot{background:#111118;border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden}
 .slot-img{aspect-ratio:2/3;background:linear-gradient(160deg,#242430,#15151c);display:grid;place-items:center;cursor:pointer;position:relative;overflow:hidden}
 .slot-img img{width:100%;height:100%;object-fit:cover;display:block}
@@ -38,15 +38,15 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
 .btn-ghost{background:rgba(255,255,255,.04);color:var(--text);border-color:rgba(255,255,255,.12)}
 .small{font-size:.78rem;color:var(--muted);margin-top:10px;line-height:1.6}
 @media (max-width:900px){.layout{grid-template-columns:1fr}.preview{position:static}}
-@media (max-width:520px){.grid4{gap:10px}.slot-body{padding:10px}.panel{padding:16px}}
+@media (max-width:520px){.grid4{grid-template-columns:repeat(3,1fr);gap:8px}.slot-body{padding:8px}.slot-body input[type=text]{font-size:.82rem;padding:8px}.panel{padding:16px}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
     <p style="color:var(--accent);font-weight:700;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;margin:0">EigaKit Template</p>
-    <h1>好きな映画4選</h1>
-    <p>あなたの「好き」を4枚で語るポスターをつくろう。画像は端末内で処理され、サーバーには送信されません。</p>
+    <h1>好きな映画9選</h1>
+    <p>あなたの「好き」を9枚で語るポスターをつくろう。画像は端末内で処理され、サーバーには送信されません。</p>
   </div>
 
   <div class="layout">
@@ -56,7 +56,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
         <label for="owner">名前・ハンドル（任意）</label>
         <input id="owner" type="text" maxlength="30" placeholder="例：@your_name / あなたの名前">
       </div>
-      <h2>4本の映画を選ぶ</h2>
+      <h2>9本の映画を選ぶ</h2>
       <div class="grid4" id="slots"></div>
     </div>
 
@@ -85,21 +85,21 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
   const owner = document.getElementById('owner');
   const dl = document.getElementById('dl');
   const share = document.getElementById('share');
-  const W = 1080, H = 1350;
-  const state = Array.from({length:4}, () => ({ title:'', img:null, src:'' }));
+  const W = 1080; let H = 1750;
+  const state = Array.from({length:9}, () => ({ title:'', img:null, src:'' }));
 
   function makeSlot(i){
     const el = document.createElement('div');
     el.className = 'slot';
     el.innerHTML = `
         <div class="slot-img">
-        <div class="ph"><strong>${i+1}</strong>タップして<br>ポスター画像を追加</div>
-        <input type="file" accept="image/*" aria-label="映画${i+1}のポスター画像">
+        <div class="ph"><strong>${i+1}</strong>「映画を検索」で<br>ポスターを追加</div>
+        <input type="file" accept="image/*" aria-label="映画${i+1}の画像をアップロード">
       </div>
       <div class="slot-body">
-        <label for="t${i}">映画${i+1}のタイトル</label>
-        <input id="t${i}" type="text" maxlength="40" placeholder="例：千と千尋の神隠し">
-        <button type="button" class="btn btn-ghost btn-sm search-btn" style="margin-top:8px;width:100%;padding:9px 10px;font-size:.8rem;border-radius:10px">映画を検索</button>
+        <label for="t${i}">映画${i+1}</label>
+        <input id="t${i}" type="text" maxlength="40" placeholder="タイトル">
+        <button type="button" class="btn btn-primary btn-sm search-btn" style="margin-top:8px;width:100%;padding:9px 10px;font-size:.8rem;border-radius:10px">映画を検索</button>
       </div>`;
     const file = el.querySelector('input[type=file]');
     const text = el.querySelector('input[type=text]');
@@ -145,7 +145,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
     });
     slotsEl.appendChild(el);
   }
-  for(let i=0;i<4;i++) makeSlot(i);
+  for(let i=0;i<9;i++) makeSlot(i);
 
   function readAsDataURL(file){
     return new Promise((res, rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
@@ -248,7 +248,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
 
     ctx.fillStyle = t.text;
     ctx.font = `700 68px ${t.fontHead}`;
-    ctx.fillText('好きな映画4選', W/2, 106);
+    ctx.fillText('好きな映画9選', W/2, 106);
 
     const name = owner.value.trim();
     if(name){
@@ -257,13 +257,27 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
       ctx.fillText(name, W/2, 190);
     }
 
-    const pad = 64, gap = 28, top = name ? 250 : 230;
-    const cellW = (W - pad*2 - gap) / 2;
+    const cols = 3, rows = 3, pad = 56, gap = 22, topY = name ? 245 : 225;
+    const cellW = (W - pad*2 - gap*(cols-1)) / cols;
     const cellH = Math.round(cellW * 1.48);
-    for(let i=0;i<4;i++){
-      const col = i%2, row = Math.floor(i/2);
+    H = topY + rows*cellH + (rows-1)*gap + 90;
+    canvas.width = W; canvas.height = H;
+    // repaint bg after resize
+    const bg2 = ctx.createLinearGradient(0,0,W,H);
+    bg2.addColorStop(0,t.bg[0]); bg2.addColorStop(.45,t.bg[1]||t.bg[0]); bg2.addColorStop(1,t.bg[2]||t.bg[1]||t.bg[0]);
+    ctx.fillStyle = bg2; ctx.fillRect(0,0,W,H);
+    const rg1b = ctx.createRadialGradient(180,120,10,180,120,420); rg1b.addColorStop(0,t.accent+'22'); rg1b.addColorStop(1,t.accent+'00');
+    ctx.fillStyle=rg1b; ctx.fillRect(0,0,W,H);
+    const rg2b = ctx.createRadialGradient(920,H-150,10,920,H-150,480); rg2b.addColorStop(0,(t.accent2||t.accent)+'1f'); rg2b.addColorStop(1,(t.accent2||t.accent)+'00');
+    ctx.fillStyle=rg2b; ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle=t.frame; ctx.lineWidth=2; roundRect(36,36,W-72,H-72,28); ctx.stroke();
+    ctx.fillStyle = t.accent; ctx.font = `700 24px ${t.fontBody}`; ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillText('MY FAVORITE 9 FILMS', W/2, 64);
+    ctx.fillStyle = t.text; ctx.font = `700 68px ${t.fontHead}`; ctx.fillText('好きな映画9選', W/2, 106);
+    if(name){ ctx.fillStyle = t.muted; ctx.font = `500 30px ${t.fontBody}`; ctx.fillText(name, W/2, 190); }
+    for(let i=0;i<9;i++){
+      const col = i%cols, row = Math.floor(i/cols);
       const x = pad + col*(cellW+gap);
-      const y = top + row*(cellH+gap);
+      const y = topY + row*(cellH+gap);
       drawPoster(i, x, y, cellW, cellH);
     }
 
@@ -272,7 +286,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
     ctx.font = `500 24px ${t.fontBody}`;
     ctx.fillText('made with EigaKit', W/2, H - 44);
 
-    const text = encodeURIComponent(`私の好きな映画4選\n\n${state.map((s,i)=>`${i+1}. ${s.title.trim()||'—'}`).join('\n')}\n\n#好きな映画4選 #EigaKit`);
+    const text = encodeURIComponent(`私の好きな映画9選\n\n${state.map((s,i)=>`${i+1}. ${s.title.trim()||'—'}`).join('\n')}\n\n#好きな映画9選 #EigaKit`);
     const url = encodeURIComponent(location.href.replace(/\/app\/top4\/.*$/, '/app/top4/'));
     share.href = `https://x.com/intent/post?text=${text}&url=${url}`;
   }

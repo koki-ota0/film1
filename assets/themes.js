@@ -78,62 +78,111 @@
     const s = document.createElement('style');
     s.id = 'ek-theme-style';
     s.textContent = `
-.ek-theme-box{margin:0 0 18px;padding:14px;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.03)}
-.ek-theme-head{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px}
-.ek-theme-head h3{margin:0;font-size:.95rem;color:#ddd5c8}
-.ek-theme-tabs{display:flex;gap:8px;flex-wrap:wrap}
-.ek-theme-tab{padding:7px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#f2efe8;font:700 .78rem "Hiragino Sans","Noto Sans JP",sans-serif;cursor:pointer}
+.ek-theme-box{margin:0 0 18px}
+.ek-theme-trigger{width:100%;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);color:#f2efe8;cursor:pointer;text-align:left;font:inherit}
+.ek-theme-trigger:hover{border-color:rgba(232,196,104,.4);background:rgba(255,255,255,.05)}
+.ek-theme-trigger .sw{width:52px;height:52px;border-radius:12px;border:1px solid rgba(255,255,255,.12);flex:0 0 auto}
+.ek-theme-trigger .meta{flex:1;min-width:0}
+.ek-theme-trigger .k{font-size:.72rem;color:#a8a39a;font-weight:700;letter-spacing:.06em}
+.ek-theme-trigger .v{font-size:.98rem;font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ek-theme-trigger .d{font-size:.76rem;color:#a8a39a;margin-top:2px}
+.ek-theme-trigger .chev{color:#a8a39a;font-size:1.2rem}
+.ek-theme-backdrop{position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.62);display:flex;align-items:flex-end;justify-content:center;padding:16px}
+@media(min-width:760px){.ek-theme-backdrop{align-items:center}}
+.ek-theme-modal{width:min(920px,100%);max-height:min(86vh,760px);overflow:hidden;background:#17171e;color:#f2efe8;border:1px solid rgba(255,255,255,.1);border-radius:20px;box-shadow:0 24px 80px rgba(0,0,0,.55);font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;display:flex;flex-direction:column}
+.ek-theme-modal-head{padding:18px 18px 12px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.ek-theme-modal-head h3{margin:0;font-size:1.15rem}
+.ek-theme-modal-head p{margin:4px 0 0;color:#a8a39a;font-size:.84rem}
+.ek-theme-close{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#f2efe8;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1;flex:0 0 auto}
+.ek-theme-tabs{display:flex;gap:8px;padding:12px 18px 0;flex-wrap:wrap}
+.ek-theme-tab{padding:8px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#f2efe8;font:700 .8rem "Hiragino Sans","Noto Sans JP",sans-serif;cursor:pointer}
 .ek-theme-tab[aria-selected="true"]{background:linear-gradient(135deg,#e8c468,#f0d78a);color:#1a1408;border-color:transparent}
-.ek-theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;max-height:320px;overflow:auto;padding-right:2px}
-.ek-theme-card{border:1px solid rgba(255,255,255,.1);background:#121218;border-radius:12px;padding:8px;cursor:pointer;text-align:left;color:#f2efe8}
+.ek-theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;padding:14px 18px 18px;overflow:auto}
+.ek-theme-card{border:1px solid rgba(255,255,255,.1);background:#121218;border-radius:14px;padding:10px;cursor:pointer;text-align:left;color:#f2efe8;transition:transform .12s,border-color .12s}
+.ek-theme-card:hover{transform:translateY(-1px);border-color:rgba(232,196,104,.35)}
 .ek-theme-card[aria-pressed="true"]{border-color:#e8c468;box-shadow:0 0 0 2px rgba(232,196,104,.25)}
-.ek-theme-swatch{height:44px;border-radius:8px;margin-bottom:8px;border:1px solid rgba(255,255,255,.08)}
-.ek-theme-name{font-size:.78rem;font-weight:700;line-height:1.3}
-.ek-theme-desc{font-size:.7rem;color:#a8a39a;line-height:1.35;margin-top:2px}
-@media(max-width:640px){.ek-theme-grid{grid-template-columns:repeat(2,1fr);max-height:280px}}
+.ek-theme-swatch{height:58px;border-radius:10px;margin-bottom:10px;border:1px solid rgba(255,255,255,.08);position:relative;overflow:hidden}
+.ek-theme-swatch .a{position:absolute;right:8px;bottom:8px;width:18px;height:18px;border-radius:50%}
+.ek-theme-name{font-size:.82rem;font-weight:700;line-height:1.3}
+.ek-theme-desc{font-size:.72rem;color:#a8a39a;line-height:1.35;margin-top:3px}
+@media(max-width:640px){.ek-theme-grid{grid-template-columns:repeat(2,1fr);gap:10px;padding:12px}}
 `;
     document.head.appendChild(s);
   }
 
   function mountPicker(container, opts = {}) {
     ensurePickerStyle();
+    ensureFonts();
     const onChange = opts.onChange || (() => {});
     let current = byId[opts.initial] ? opts.initial : allThemes[0].id;
-    let tab = 'style';
+    let tab = byId[current].group || 'style';
     container.classList.add('ek-theme-box');
-    container.innerHTML = `
-      <div class="ek-theme-head">
-        <h3>デザインを選ぶ</h3>
-        <div class="ek-theme-tabs">
-          <button type="button" class="ek-theme-tab" data-tab="style" aria-selected="true">スタイル (${styleThemes.length})</button>
-          <button type="button" class="ek-theme-tab" data-tab="movie" aria-selected="false">映画風 (${movieThemes.length})</button>
-        </div>
-      </div>
-      <div class="ek-theme-grid"></div>
-    `;
-    const grid = container.querySelector('.ek-theme-grid');
-    const tabs = [...container.querySelectorAll('.ek-theme-tab')];
 
-    function render() {
-      tabs.forEach(t => t.setAttribute('aria-selected', t.dataset.tab === tab ? 'true' : 'false'));
-      const list = tab === 'style' ? styleThemes : movieThemes;
-      grid.innerHTML = '';
-      list.forEach(t => {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'ek-theme-card';
-        b.setAttribute('aria-pressed', t.id === current ? 'true' : 'false');
-        const bg = `linear-gradient(135deg, ${t.bg[0]}, ${t.bg[1] || t.bg[0]})`;
-        b.innerHTML = `<div class="ek-theme-swatch" style="background:${bg};box-shadow:inset 0 0 0 2px ${t.frame}"></div><div class="ek-theme-name"></div><div class="ek-theme-desc"></div>`;
-        b.querySelector('.ek-theme-name').textContent = t.name;
-        b.querySelector('.ek-theme-desc').textContent = t.desc;
-        b.onclick = () => { current = t.id; render(); onChange(byId[current]); };
-        grid.appendChild(b);
-      });
+    function renderTrigger() {
+      const t = byId[current];
+      const bg = `linear-gradient(135deg, ${t.bg[0]}, ${t.bg[1] || t.bg[0]})`;
+      container.innerHTML = `
+        <button type="button" class="ek-theme-trigger" aria-label="デザインを変更">
+          <div class="sw" style="background:${bg};box-shadow:inset 0 0 0 2px ${t.frame}"></div>
+          <div class="meta">
+            <div class="k">デザイン</div>
+            <div class="v"></div>
+            <div class="d"></div>
+          </div>
+          <div class="chev">▾</div>
+        </button>`;
+      container.querySelector('.v').textContent = t.name;
+      container.querySelector('.d').textContent = t.desc;
+      container.querySelector('.ek-theme-trigger').onclick = openModal;
     }
-    tabs.forEach(t => t.onclick = () => { tab = t.dataset.tab; render(); });
-    render();
-    return { get: () => byId[current], set: (id) => { if(byId[id]){ current=id; tab=byId[id].group; render(); onChange(byId[current]); } } };
+
+    function openModal() {
+      tab = byId[current].group || tab;
+      const backdrop = document.createElement('div');
+      backdrop.className = 'ek-theme-backdrop';
+      backdrop.innerHTML = `
+        <div class="ek-theme-modal" role="dialog" aria-modal="true" aria-label="デザインを選ぶ">
+          <div class="ek-theme-modal-head">
+            <div><h3>デザインを選ぶ</h3><p>書き出し画像の雰囲気を選べます。${styleThemes.length}スタイル + ${movieThemes.length}映画風。</p></div>
+            <button type="button" class="ek-theme-close" aria-label="閉じる">×</button>
+          </div>
+          <div class="ek-theme-tabs">
+            <button type="button" class="ek-theme-tab" data-tab="style" aria-selected="${tab==='style'}">スタイル (${styleThemes.length})</button>
+            <button type="button" class="ek-theme-tab" data-tab="movie" aria-selected="${tab==='movie'}">映画風 (${movieThemes.length})</button>
+          </div>
+          <div class="ek-theme-grid"></div>
+        </div>`;
+      const close = () => { backdrop.remove(); document.removeEventListener('keydown', onKey); };
+      const onKey = (e) => { if(e.key==='Escape') close(); };
+      backdrop.addEventListener('click', e => { if(e.target===backdrop) close(); });
+      backdrop.querySelector('.ek-theme-close').onclick = close;
+      document.addEventListener('keydown', onKey);
+      document.body.appendChild(backdrop);
+
+      const grid = backdrop.querySelector('.ek-theme-grid');
+      const tabs = [...backdrop.querySelectorAll('.ek-theme-tab')];
+      function renderGrid() {
+        tabs.forEach(t => t.setAttribute('aria-selected', t.dataset.tab===tab?'true':'false'));
+        const list = tab==='style' ? styleThemes : movieThemes;
+        grid.innerHTML='';
+        list.forEach(t => {
+          const b = document.createElement('button');
+          b.type='button'; b.className='ek-theme-card';
+          b.setAttribute('aria-pressed', t.id===current?'true':'false');
+          const bg = `linear-gradient(135deg, ${t.bg[0]}, ${t.bg[1]||t.bg[0]})`;
+          b.innerHTML = `<div class="ek-theme-swatch" style="background:${bg};box-shadow:inset 0 0 0 2px ${t.frame}"><span class="a" style="background:${t.accent}"></span></div><div class="ek-theme-name"></div><div class="ek-theme-desc"></div>`;
+          b.querySelector('.ek-theme-name').textContent = t.name;
+          b.querySelector('.ek-theme-desc').textContent = t.desc;
+          b.onclick = () => { current = t.id; renderTrigger(); onChange(byId[current]); close(); };
+          grid.appendChild(b);
+        });
+      }
+      tabs.forEach(t => t.onclick = () => { tab=t.dataset.tab; renderGrid(); });
+      renderGrid();
+    }
+
+    renderTrigger();
+    return { get: () => byId[current], set: (id) => { if(byId[id]){ current=id; tab=byId[id].group; renderTrigger(); onChange(byId[current]); } } };
   }
 
   window.EigaKitThemes = { all: allThemes, style: styleThemes, movie: movieThemes, byId, mountPicker };
