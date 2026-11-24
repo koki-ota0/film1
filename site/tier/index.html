@@ -14,12 +14,12 @@ h1{font-family:var(--serif);font-size:clamp(1.8rem,5vw,3rem);margin:.2em 0 .2em;
 .panel{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:22px}
 .panel h2{font-size:1rem;margin:0 0 14px;color:#ddd5c8}
 .board{border:1px solid rgba(255,255,255,.1);border-radius:14px;overflow:hidden;background:#101015}
-.tier{display:grid;grid-template-columns:92px 1fr;min-height:86px;border-bottom:1px solid #101015}
+.tier{display:grid;grid-template-columns:92px 1fr;min-height:124px;border-bottom:1px solid #101015}
 .tier:last-child{border-bottom:none}
-.tier-label{display:flex;align-items:center;justify-content:center;font:800 2rem/1 var(--serif);color:#111;text-align:center;padding:8px}
-.tier-items{display:flex;flex-wrap:wrap;gap:8px;padding:10px;min-height:86px;align-content:flex-start;background:#181820}
+.tier-label{display:flex;align-items:center;justify-content:center;font:800 1.9rem/1 var(--serif);color:#111;text-align:center;padding:8px}
+.tier-items{display:flex;flex-wrap:wrap;gap:8px;padding:10px;min-height:124px;align-content:flex-start;background:#181820}
 .tier-items.drag-over{outline:2px dashed rgba(232,196,104,.7);outline-offset:-4px;background:#1d1d28}
-.item{width:72px;height:72px;border-radius:10px;overflow:hidden;border:2px solid rgba(255,255,255,.12);background:#252532;cursor:grab;position:relative;flex:0 0 auto;user-select:none}
+.item{width:76px;height:114px;border-radius:10px;overflow:hidden;border:2px solid rgba(255,255,255,.12);background:#252532;cursor:grab;position:relative;flex:0 0 auto;user-select:none}
 .item.selected{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,196,104,.25)}
 .item img{width:100%;height:100%;object-fit:cover;display:block}
 .item .txt{width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px;font-size:.72rem;font-weight:700;line-height:1.3;color:#f2efe8;word-break:break-word}
@@ -44,7 +44,7 @@ h1{font-family:var(--serif);font-size:clamp(1.8rem,5vw,3rem);margin:.2em 0 .2em;
 canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f}
 .hint{font-size:.8rem;color:var(--muted);margin:10px 0 0}
 @media (max-width:980px){.layout{grid-template-columns:1fr}.preview{position:static}}
-@media (max-width:640px){.panel{padding:16px}.tier{grid-template-columns:72px 1fr;min-height:74px}.tier-label{font-size:1.6rem}.item{width:64px;height:64px}.add-row{grid-template-columns:1fr 1fr}.add-row input[type=text]{grid-column:1/-1}}
+@media (max-width:640px){.panel{padding:16px}.tier{grid-template-columns:68px 1fr;min-height:108px}.tier-label{font-size:1.5rem}.item{width:64px;height:96px}.add-row{grid-template-columns:1fr 1fr}.add-row input[type=text]{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -70,10 +70,10 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
       </div>
 
       <div class="add-row">
-        <input id="newText" type="text" maxlength="30" placeholder="映画タイトルを入力">
-        <button class="btn btn-primary" id="addText" type="button">追加</button>
+        <input id="newText" type="text" maxlength="30" placeholder="映画タイトルを入力（検索推奨）">
+        <button class="btn btn-primary" id="searchMovie" type="button">映画を検索</button>
+        <button class="btn btn-ghost" id="addText" type="button">テキスト追加</button>
         <label class="btn btn-ghost file-btn">画像追加<input id="addImg" type="file" accept="image/*" multiple></label>
-        <button class="btn btn-ghost" id="searchMovie" type="button">映画検索</button>
       </div>
     </div>
 
@@ -97,11 +97,12 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
 <script>
 (() => {
   const TIERS = [
-    {id:'S', color:'#ff7a7a'},
-    {id:'A', color:'#ffb36b'},
-    {id:'B', color:'#ffd166'},
-    {id:'C', color:'#8fd694'},
-    {id:'D', color:'#7ab8ff'},
+    {id:'SS', color:'#ff5c8a'},
+    {id:'S',  color:'#ff7a7a'},
+    {id:'A',  color:'#ffb36b'},
+    {id:'B',  color:'#ffd166'},
+    {id:'C',  color:'#8fd694'},
+    {id:'D',  color:'#7ab8ff'},
   ];
   const board = document.getElementById('board');
   const pool = document.getElementById('pool');
@@ -142,11 +143,13 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
   }
 
   addText.addEventListener('click', ()=>addTextItem(newText.value));
-  newText.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); addTextItem(newText.value); } });
+  newText.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); document.getElementById('searchMovie').click(); } });
   addImg.addEventListener('change', async e=>{ const fs=[...(e.target.files||[])]; if(fs.length) await addImageFiles(fs); e.target.value=''; });
   document.getElementById('searchMovie').addEventListener('click', () => {
     if (!window.EigaKitMovieSearch) return;
+    const q = newText.value.trim();
     window.EigaKitMovieSearch.open({
+      query: q,
       onPick: async (movie) => {
         const title = movie.title + (movie.year ? ` (${movie.year})` : '');
         if (movie.poster) {
@@ -159,6 +162,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
         } else {
           items.push({id:uid(), type:'text', text:title, src:'', img:null, tier:'pool'});
         }
+        newText.value = '';
         render();
       }
     });
@@ -241,7 +245,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
 
   function draw(){
     const t = theme;
-    const W=1080; const pad=44; const labelW=130; const rowH=140; const headerH=170; const footerH=70;
+    const W=1080; const pad=44; const labelW=130; const rowH=170; const headerH=170; const footerH=70;
     const tiersH = TIERS.length * rowH;
     const poolItems = tierItems('pool');
     const poolH = poolItems.length ? 160 : 0;
@@ -267,24 +271,24 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
       ctx.fillText(tr.id, boardX+labelW/2, y+rowH/2+2);
       ctx.fillStyle=t.bg[1]||'#181820'; ctx.fillRect(boardX+labelW,y,boardW-labelW,rowH);
       const its = tierItems(tr.id);
-      const isz=104, igap=10; let ix=boardX+labelW+14, iy=y+(rowH-isz)/2;
+      const iW=96, iH=144, igap=10; let ix=boardX+labelW+14, iy=y+(rowH-iH)/2;
       for(const it of its){
         if(ix+isz > boardX+boardW-10) { ix=boardX+labelW+14; }
-        ctx.save(); rr(ix,iy,isz,isz,10); ctx.clip();
+        ctx.save(); rr(ix,iy,iW,iH,10); ctx.clip();
         if(it.type==='image' && it.img){
-          const iw=it.img.naturalWidth, ih=it.img.naturalHeight; const r=Math.max(isz/iw,isz/ih); const nw=iw*r, nh=ih*r;
-          ctx.drawImage(it.img, ix+(isz-nw)/2, iy+(isz-nh)/2, nw, nh);
+          const iw=it.img.naturalWidth, ih=it.img.naturalHeight; const r=Math.max(iW/iw,iH/ih); const nw=iw*r, nh=ih*r;
+          ctx.drawImage(it.img, ix+(iW-nw)/2, iy+(iH-nh)/2, nw, nh);
         } else {
-          ctx.fillStyle=t.bg[2]||'#2a2a38'; ctx.fillRect(ix,iy,isz,isz);
+          ctx.fillStyle=t.bg[2]||'#2a2a38'; ctx.fillRect(ix,iy,iW,iH);
           ctx.fillStyle=t.text; ctx.textAlign='center'; ctx.textBaseline='middle';
           const font=`700 20px ${t.fontBody}`;
-          const lines=wrapText(it.text||'', isz-12, font, 3);
-          const lh=24; const startY=iy+isz/2 - (lines.length-1)*lh/2;
-          ctx.font=font; lines.forEach((ln,li)=>ctx.fillText(ln, ix+isz/2, startY+li*lh));
+          const lines=wrapText(it.text||'', iW-12, font, 4);
+          const lh=24; const startY=iy+iH/2 - (lines.length-1)*lh/2;
+          ctx.font=font; lines.forEach((ln,li)=>ctx.fillText(ln, ix+iW/2, startY+li*lh));
         }
         ctx.restore();
-        ctx.strokeStyle=t.frame; ctx.lineWidth=2; rr(ix,iy,isz,isz,10); ctx.stroke();
-        ix += isz+igap;
+        ctx.strokeStyle=t.frame; ctx.lineWidth=2; rr(ix,iy,iW,iH,10); ctx.stroke();
+        ix += iW+igap;
       }
       ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(boardX,y+rowH); ctx.lineTo(boardX+boardW,y+rowH); ctx.stroke();
     });
@@ -295,22 +299,22 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
       const py = boardY+tiersH+24;
       ctx.fillStyle=t.muted; ctx.font=`600 22px ${t.fontBody}`; ctx.textAlign='left'; ctx.textBaseline='top';
       ctx.fillText('未分類', boardX, py);
-      const isz=88, igap=10; let ix=boardX, iy=py+36;
+      const pW=80, pH=120, igap=10; let ix=boardX, iy=py+36;
       for(const it of poolItems){
-        if(ix+isz>boardX+boardW){ ix=boardX; iy+=isz+igap; }
-        ctx.save(); rr(ix,iy,isz,isz,10); ctx.clip();
+        if(ix+pW>boardX+boardW){ ix=boardX; iy+=pH+igap; }
+        ctx.save(); rr(ix,iy,pW,pH,10); ctx.clip();
         if(it.type==='image' && it.img){
-          const iw=it.img.naturalWidth, ih=it.img.naturalHeight; const r=Math.max(isz/iw,isz/ih); const nw=iw*r, nh=ih*r;
-          ctx.drawImage(it.img, ix+(isz-nw)/2, iy+(isz-nh)/2, nw, nh);
+          const iw=it.img.naturalWidth, ih=it.img.naturalHeight; const r=Math.max(pW/iw,pH/ih); const nw=iw*r, nh=ih*r;
+          ctx.drawImage(it.img, ix+(pW-nw)/2, iy+(pH-nh)/2, nw, nh);
         } else {
-          ctx.fillStyle=t.bg[2]||'#2a2a38'; ctx.fillRect(ix,iy,isz,isz);
+          ctx.fillStyle=t.bg[2]||'#2a2a38'; ctx.fillRect(ix,iy,pW,pH);
           ctx.fillStyle=t.text; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font=`700 18px ${t.fontBody}`;
-          const lines=wrapText(it.text||'', isz-10, `700 18px ${t.fontBody}`, 3);
-          const lh=22; const sy=iy+isz/2-(lines.length-1)*lh/2; lines.forEach((ln,li)=>ctx.fillText(ln,ix+isz/2,sy+li*lh));
+          const lines=wrapText(it.text||'', pW-10, `700 18px ${t.fontBody}`, 4);
+          const lh=22; const sy=iy+pH/2-(lines.length-1)*lh/2; lines.forEach((ln,li)=>ctx.fillText(ln,ix+pW/2,sy+li*lh));
         }
         ctx.restore();
-        ctx.strokeStyle=t.frame; ctx.lineWidth=2; rr(ix,iy,isz,isz,10); ctx.stroke();
-        ix += isz+igap;
+        ctx.strokeStyle=t.frame; ctx.lineWidth=2; rr(ix,iy,pW,pH,10); ctx.stroke();
+        ix += pW+igap;
       }
     }
 

@@ -74,7 +74,7 @@
         <div id="ekms-head">
           <button id="ekms-close" type="button" aria-label="閉じる">×</button>
           <h3>映画を検索</h3>
-          <p>TMDBから映画ポスターを検索します。デフォルトキーが設定されていない場合は、無料APIキーを入力してください。</p>
+          <p>TMDBから映画ポスターを検索します。</p>
         </div>
         <div id="ekms-body">
           <div id="ekms-keybox">
@@ -109,9 +109,11 @@
     const small = backdrop.querySelector('#ekms-small');
     const builtIn = getBuiltInKey();
     keyInput.value = getUserKey();
-    small.textContent = builtIn
-      ? 'このサイトにはデフォルトのTMDBキーが設定されています。そのまま検索できます。自分のキーを使いたい場合だけ入力して保存してください（このブラウザにのみ保存されます）。'
-      : 'TMDBの無料アカウントでAPIキーを発行できます。キーは端末のlocalStorageに保存され、検索時にTMDBへ送信されます。';
+    if (builtIn) {
+      backdrop.querySelector('#ekms-keybox').style.display = 'none';
+    } else {
+      small.textContent = 'TMDBの無料アカウントでAPIキーを発行できます。キーは端末のlocalStorageに保存され、検索時にTMDBへ送信されます。';
+    }
 
     backdrop.querySelector('#ekms-close').onclick = close;
     backdrop.querySelector('#ekms-save').onclick = () => { setKey(keyInput.value); status.textContent = keyInput.value.trim() ? 'APIキーを保存しました。' : 'APIキーを空にしました。'; };
@@ -148,6 +150,7 @@
 
     backdrop.querySelector('#ekms-go').onclick = run;
     qInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); run(); } });
+    if (opts.query) { qInput.value = opts.query; }
     setTimeout(() => qInput.focus(), 50);
   }
 
