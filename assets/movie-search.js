@@ -154,5 +154,34 @@
     setTimeout(() => qInput.focus(), 50);
   }
 
-  window.EigaKitMovieSearch = { open, getKey, setKey };
+  async function inlineSearch({ query, container, status, onPick }) {
+    ensureStyle();
+    const q = (query || '').trim();
+    const k = getKey();
+    if (!q) { if (status) status.textContent = '映画タイトルを入力してください。'; return; }
+    if (!k) { if (status) status.textContent = 'TMDB APIキーが未設定です。'; return; }
+    if (status) status.textContent = '検索中...';
+    if (container) container.innerHTML = '';
+    try {
+      const items = await searchTMDB(q, k);
+      if (!items.length) { if (status) status.textContent = '見つかりませんでした。'; return; }
+      if (status) status.textContent = `${items.length}件 — クリックで選択`;
+      for (const it of items) {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'ekms-card';
+        card.innerHTML = `
+          <div class="ekms-poster">${it.poster ? `<img src="${it.poster}" alt="" loading="lazy" crossorigin="anonymous">` : '<span>No Poster</span>'}</div>
+          <div class="ekms-meta"><div class="ekms-title"></div><div class="ekms-year"></div></div>`;
+        card.querySelector('.ekms-title').textContent = it.title;
+        card.querySelector('.ekms-year').textContent = it.year || '';
+        card.onclick = () => onPick(it);
+        container.appendChild(card);
+      }
+    } catch (e) {
+      if (status) status.textContent = `検索に失敗しました: ${e.message || e}`;
+    }
+  }
+
+  window.EigaKitMovieSearch = { open, getKey, setKey, inlineSearch };
 })();
