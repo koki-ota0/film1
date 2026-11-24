@@ -25,6 +25,16 @@
     {id:'candy',name:'Candy',group:'style',desc:'ポップで明るい',bg:['#fff7fb','#f7fbff','#fffaf0'],accent:'#ff4d8d',accent2:'#5ecbff',text:'#2c2430',muted:'rgba(44,36,48,.58)',frame:'rgba(255,77,141,.24)',fontHead:sans,fontBody:sans},
     {id:'blueprint',name:'Blueprint',group:'style',desc:'設計図風ブルー',bg:['#0b2d59','#072346','#0e376b'],accent:'#eaf6ff',accent2:'#9fd3ff',text:'#eaf6ff',muted:'rgba(234,246,255,.66)',frame:'rgba(234,246,255,.3)',fontHead:mono,fontBody:sans},
     {id:'velvet',name:'Velvet Purple',group:'style',desc:'紫のベルベット',bg:['#1a1024','#110816','#241233'],accent:'#d7aefb',accent2:'#f0c987',text:'#f7f0ff',muted:'rgba(247,240,255,.62)',frame:'rgba(215,174,251,.3)',fontHead:serif,fontBody:sans},
+  {id:'pixel-art',name:'Pixel Art',group:'style',desc:'レトロゲーム風ドット',bg:['#0f0f1b','#090912','#1a1a2e'],accent:'#00ff90',accent2:'#ffcc00',text:'#f4f4ff',muted:'rgba(244,244,255,.62)',frame:'rgba(0,255,144,.35)',fontHead:'"Press Start 2P","DotGothic16",monospace',fontBody:'"DotGothic16","Noto Sans JP",sans-serif'},
+  {id:'chalkboard',name:'ChalkBoard',group:'style',desc:'黒板の手描き風',bg:['#22352b','#1a2b23','#2a4034'],accent:'#f5f5dc',accent2:'#ffd966',text:'#f5f5dc',muted:'rgba(245,245,220,.66)',frame:'rgba(245,245,220,.28)',fontHead:'"Yomogi","Klee One","Hiragino Maru Gothic ProN",cursive',fontBody:'"Yomogi","Klee One","Hiragino Maru Gothic ProN",sans-serif'},
+  {id:'glow-sketch',name:'Glow Sketch',group:'style',desc:'黒背景にネオン線画',bg:['#050505','#000000','#0a0a12'],accent:'#7df9ff',accent2:'#ff6ec7',text:'#f5fbff',muted:'rgba(245,251,255,.62)',frame:'rgba(125,249,255,.35)',fontHead:'"Orbitron","Noto Sans JP",sans-serif',fontBody:'"Noto Sans JP",sans-serif'},
+  {id:'ps2-style',name:'PS2 Style',group:'style',desc:'ローポリ3D/テック感',bg:['#1a2233','#111827','#23314a'],accent:'#8ec5ff',accent2:'#b8c0cc',text:'#eef4ff',muted:'rgba(238,244,255,.6)',frame:'rgba(142,197,255,.3)',fontHead:'"Orbitron","Hiragino Sans",sans-serif',fontBody:'"Noto Sans JP",sans-serif'},
+  {id:'comic-art',name:'Comic Art',group:'style',desc:'ポップアートのコマ割り',bg:['#fff8e1','#ffefc2','#fffdf5'],accent:'#e63946',accent2:'#1d3557',text:'#1a1a1a',muted:'rgba(26,26,26,.62)',frame:'rgba(26,26,26,.35)',fontHead:'"Bangers","RocknRoll One","Noto Sans JP",sans-serif',fontBody:'"RocknRoll One","Noto Sans JP",sans-serif'},
+  {id:'flat-vector',name:'Flat Vector',group:'style',desc:'ミニマルな夜景フラット',bg:['#0f1b2d','#162840','#1e3657'],accent:'#ffcc66',accent2:'#6dd3ce',text:'#f3f8ff',muted:'rgba(243,248,255,.62)',frame:'rgba(255,204,102,.28)',fontHead:'"Noto Sans JP","Hiragino Sans",sans-serif',fontBody:'"Noto Sans JP","Hiragino Sans",sans-serif'},
+  {id:'dan-koe',name:'Dan Koe Style',group:'style',desc:'設計図・ワイヤーフレーム',bg:['#f6f6f2','#ecece6','#f6f6f2'],accent:'#111111',accent2:'#4a4a4a',text:'#111111',muted:'rgba(17,17,17,.58)',frame:'rgba(17,17,17,.28)',fontHead:'"IBM Plex Mono","SF Mono","Menlo",monospace',fontBody:'"IBM Plex Sans","Noto Sans JP",sans-serif'},
+  {id:'cgi-motion',name:'CGI Motion',group:'style',desc:'フォトリアル3Dシネマ',bg:['#0b0f14','#05080c','#151c24'],accent:'#c9d6df',accent2:'#ff8c42',text:'#f2f6fa',muted:'rgba(242,246,250,.6)',frame:'rgba(201,214,223,.28)',fontHead:'"Montserrat","Hiragino Sans",sans-serif',fontBody:'"Noto Sans JP",sans-serif'},
+  {id:'lego-style',name:'Lego Style',group:'style',desc:'ブロック造形のポップ',bg:['#f5f5f5','#ffffff','#ececec'],accent:'#d01012',accent2:'#0055bf',text:'#1a1a1a',muted:'rgba(26,26,26,.62)',frame:'rgba(208,16,18,.3)',fontHead:'"Fredoka","RocknRoll One","Noto Sans JP",sans-serif',fontBody:'"Noto Sans JP",sans-serif'},
+  {id:'zackd-films',name:'ZackD Films Style',group:'style',desc:'シネマティック3D・ドラマ',bg:['#111318','#090b0f','#1b2028'],accent:'#ff4d2e',accent2:'#f2c14e',text:'#f5f7fa',muted:'rgba(245,247,250,.62)',frame:'rgba(255,77,46,.32)',fontHead:'"Oswald","Impact","Noto Sans JP",sans-serif',fontBody:'"Noto Sans JP",sans-serif'},
   ];
 
   const movieThemes = [
@@ -52,6 +62,16 @@
 
   const allThemes = [...styleThemes, ...movieThemes];
   const byId = Object.fromEntries(allThemes.map(t => [t.id, t]));
+
+  function ensureFonts() {
+    if (document.getElementById('ek-theme-fonts')) return;
+    const link = document.createElement('link');
+    link.id = 'ek-theme-fonts';
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Bangers&family=DotGothic16&family=Fredoka:wght@600;700&family=IBM+Plex+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;600;700&family=Klee+One:wght@400;600&family=Montserrat:wght@600;700;800&family=Orbitron:wght@600;700&family=Oswald:wght@600;700&family=Press+Start+2P&family=RocknRoll+One&family=Yomogi&display=swap';
+    document.head.appendChild(link);
+  }
+  ensureFonts();
 
   function ensurePickerStyle() {
     if (document.getElementById('ek-theme-style')) return;
@@ -85,8 +105,8 @@
       <div class="ek-theme-head">
         <h3>デザインを選ぶ</h3>
         <div class="ek-theme-tabs">
-          <button type="button" class="ek-theme-tab" data-tab="style" aria-selected="true">スタイル (20)</button>
-          <button type="button" class="ek-theme-tab" data-tab="movie" aria-selected="false">映画風 (20)</button>
+          <button type="button" class="ek-theme-tab" data-tab="style" aria-selected="true">スタイル (${styleThemes.length})</button>
+          <button type="button" class="ek-theme-tab" data-tab="movie" aria-selected="false">映画風 (${movieThemes.length})</button>
         </div>
       </div>
       <div class="ek-theme-grid"></div>
