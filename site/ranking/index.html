@@ -44,6 +44,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
 
   <div class="layout">
     <div class="panel">
+      <div id="themePicker"></div>
       <div class="field">
         <label for="heading">カードの見出し</label>
         <input id="heading" type="text" maxlength="30" value="2026年ベスト映画">
@@ -74,6 +75,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
   </div>
 </div>
 
+<script src="../../assets/themes.js"></script>
 <script>
 (() => {
   const rowsEl = document.getElementById('rows');
@@ -90,6 +92,10 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
     {title:'', comment:''},
     {title:'', comment:''},
   ];
+  let theme = (window.EigaKitThemes && window.EigaKitThemes.byId['cinema-dark']) || {bg:['#191610','#0b0b0f','#121018'],accent:'#e8c468',accent2:'#ff7a59',text:'#f2efe8',muted:'rgba(242,239,232,.62)',frame:'rgba(232,196,104,.22)',fontHead:'Georgia,serif',fontBody:'system-ui,sans-serif'};
+  if (window.EigaKitThemes) {
+    window.EigaKitThemes.mountPicker(document.getElementById('themePicker'), { initial: theme.id, onChange: (t) => { theme = t; draw(); } });
+  }
 
   function escapeHtml(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
   function renderRows(){
@@ -130,65 +136,58 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
   }
 
   function draw(){
+    const t = theme;
     ctx.clearRect(0,0,W,H);
     const bg = ctx.createLinearGradient(0,0,0,H);
-    bg.addColorStop(0,'#191610'); bg.addColorStop(.4,'#0b0b0f'); bg.addColorStop(1,'#121018');
+    bg.addColorStop(0,t.bg[0]); bg.addColorStop(.4,t.bg[1]||t.bg[0]); bg.addColorStop(1,t.bg[2]||t.bg[1]||t.bg[0]);
     ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-    const rg = ctx.createRadialGradient(850,100,10,850,100,500); rg.addColorStop(0,'rgba(232,196,104,.12)'); rg.addColorStop(1,'rgba(232,196,104,0)');
+    const rg = ctx.createRadialGradient(850,100,10,850,100,500); rg.addColorStop(0,t.accent+'22'); rg.addColorStop(1,t.accent+'00');
     ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
 
-    // frame
-    ctx.strokeStyle='rgba(232,196,104,.22)'; ctx.lineWidth=2; rr(36,36,W-72,H-72,28); ctx.stroke();
+    ctx.strokeStyle=t.frame; ctx.lineWidth=2; rr(36,36,W-72,H-72,28); ctx.stroke();
 
-    // heading
-    ctx.fillStyle='#e8c468'; ctx.font='700 24px "Hiragino Sans","Noto Sans JP",sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillStyle=t.accent; ctx.font=`700 24px ${t.fontBody}`; ctx.textAlign='center'; ctx.textBaseline='top';
     ctx.fillText('MOVIE RANKING', W/2, 72);
 
-    ctx.fillStyle='#f2efe8'; ctx.font='700 62px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",Georgia,serif';
+    ctx.fillStyle=t.text; ctx.font=`700 62px ${t.fontHead}`;
     const head = heading.value.trim() || '映画ランキング';
-    const headLines = wrap(head, W-140, '700 62px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",Georgia,serif', 2);
+    const headLines = wrap(head, W-140, `700 62px ${t.fontHead}`, 2);
     headLines.forEach((ln,i)=>ctx.fillText(ln, W/2, 112 + i*72));
     let y = 112 + headLines.length*72 + 10;
 
     const subText = sub.value.trim();
-    if(subText){ ctx.fillStyle='rgba(242,239,232,.62)'; ctx.font='500 28px "Hiragino Sans","Noto Sans JP",sans-serif'; ctx.fillText(subText, W/2, y); y += 52; }
+    if(subText){ ctx.fillStyle=t.muted; ctx.font=`500 28px ${t.fontBody}`; ctx.fillText(subText, W/2, y); y += 52; }
     y += 20;
 
-    // list
     const left = 84, right = W-84, rowH = Math.min(150, Math.floor((H - y - 120) / items.length));
     items.forEach((it, i) => {
       const ry = y + i*rowH;
-      // separator
-      ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(left, ry); ctx.lineTo(right, ry); ctx.stroke();
-      // rank
-      const rankColor = i===0 ? '#e8c468' : i===1 ? '#d4d0c8' : i===2 ? '#d49a6a' : 'rgba(242,239,232,.55)';
+      ctx.strokeStyle=t.frame; ctx.globalAlpha=0.4; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(left, ry); ctx.lineTo(right, ry); ctx.stroke(); ctx.globalAlpha=1;
+      const rankColor = i===0 ? t.accent : i===1 ? t.text : i===2 ? (t.accent2||t.accent) : t.muted;
       ctx.fillStyle=rankColor; ctx.textAlign='left'; ctx.textBaseline='middle';
-      ctx.font='700 54px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",Georgia,serif';
+      ctx.font=`700 54px ${t.fontHead}`;
       ctx.fillText(String(i+1), left, ry + rowH/2 - (it.comment.trim()?14:0));
-      // title
-      ctx.fillStyle='#f2efe8'; ctx.font='700 38px "Hiragino Sans","Noto Sans JP",sans-serif';
+      ctx.fillStyle=t.text; ctx.font=`700 38px ${t.fontBody}`;
       const title = it.title.trim() || '（未入力）';
-      const tLines = wrap(title, right-left-90, '700 38px "Hiragino Sans","Noto Sans JP",sans-serif', 1);
+      const tLines = wrap(title, right-left-90, `700 38px ${t.fontBody}`, 1);
       ctx.fillText(tLines[0], left+72, ry + rowH/2 - (it.comment.trim()?16:0));
-      // comment
       if(it.comment.trim()){
-        ctx.fillStyle='rgba(242,239,232,.58)'; ctx.font='400 26px "Hiragino Sans","Noto Sans JP",sans-serif';
-        const cLines = wrap(it.comment.trim(), right-left-90, '400 26px "Hiragino Sans","Noto Sans JP",sans-serif', 1);
+        ctx.fillStyle=t.muted; ctx.font=`400 26px ${t.fontBody}`;
+        const cLines = wrap(it.comment.trim(), right-left-90, `400 26px ${t.fontBody}`, 1);
         ctx.fillText(cLines[0], left+72, ry + rowH/2 + 28);
       }
     });
-    // bottom line
     const endY = y + items.length*rowH;
-    ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.beginPath(); ctx.moveTo(left,endY); ctx.lineTo(right,endY); ctx.stroke();
+    ctx.strokeStyle=t.frame; ctx.globalAlpha=0.4; ctx.beginPath(); ctx.moveTo(left,endY); ctx.lineTo(right,endY); ctx.stroke(); ctx.globalAlpha=1;
 
-    ctx.fillStyle='rgba(242,239,232,.42)'; ctx.textAlign='center'; ctx.textBaseline='bottom';
-    ctx.font='500 24px "Hiragino Sans","Noto Sans JP",sans-serif';
+    ctx.fillStyle=t.muted; ctx.textAlign='center'; ctx.textBaseline='bottom';
+    ctx.font=`500 24px ${t.fontBody}`;
     ctx.fillText('made with EigaKit', W/2, H-52);
 
     const list = items.filter(it=>it.title.trim()).map((it,i)=>`${i+1}. ${it.title.trim()}`).join('\n');
-    const text = encodeURIComponent(`${head}\n\n${list}\n\n#映画ランキング #EigaKit`);
+    const stext = encodeURIComponent(`${head}\n\n${list}\n\n#映画ランキング #EigaKit`);
     const url = encodeURIComponent(location.href.replace(/\/app\/ranking\/.*$/, '/app/ranking/'));
-    share.href = `https://x.com/intent/post?text=${text}&url=${url}`;
+    share.href = `https://x.com/intent/post?text=${stext}&url=${url}`;
   }
 
   document.getElementById('dl').addEventListener('click', ()=>{ const a=document.createElement('a'); a.download='eigakit-ranking.png'; a.href=canvas.toDataURL('image/png'); a.click(); });
