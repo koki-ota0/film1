@@ -315,14 +315,26 @@ function appBar(a) {
 #ek-bar a{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#f2efe8;text-decoration:none;white-space:nowrap}
 #ek-bar .home{background:linear-gradient(135deg,#e8c468,#f0d78a);color:#1a1408;border-color:transparent}
 body{padding-bottom:76px}
+#ek-topnav{position:fixed;top:12px;right:12px;z-index:2147483001;font:600 13px/1 "Hiragino Sans","Noto Sans JP",system-ui,sans-serif}
+#ek-topnav button{width:44px;height:44px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(11,11,15,.72);color:#f2efe8;backdrop-filter:blur(10px);cursor:pointer;font-size:20px;line-height:1}
+#ek-topnav .menu{display:none;position:absolute;top:52px;right:0;min-width:180px;padding:8px;background:rgba(20,20,28,.96);border:1px solid rgba(255,255,255,.1);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.45);backdrop-filter:blur(12px)}
+#ek-topnav.open .menu{display:block}
+#ek-topnav .menu a{display:block;padding:11px 12px;border-radius:10px;color:#f2efe8;text-decoration:none}
+#ek-topnav .menu a:hover{background:rgba(255,255,255,.07)}
 @media(max-width:640px){#ek-bar{gap:6px;overflow-x:auto;justify-content:flex-start}#ek-bar a{padding:8px 11px;font-size:12px}}
 </style>
+<div id="ek-topnav">
+  <button type="button" aria-label="メニュー" aria-expanded="false" aria-controls="ek-topnav-menu">☰</button>
+  <div class="menu" id="ek-topnav-menu">
+    <a href="../../apps/${esc(a.slug)}/">使い方</a>
+    <a href="../../apps/">ツール一覧</a>
+  </div>
+</div>
 <div id="ek-bar" role="navigation" aria-label="サイトメニュー">
   <a class="home" href="../../">ホーム</a>
-  <a href="../../apps/${esc(a.slug)}/">使い方</a>
-  <a href="../../apps/">ツール一覧</a>
   <a target="_blank" rel="noopener" href="https://x.com/intent/post?text=${shareText}&url=${shareUrl}">Xでシェア</a>
-</div>`;
+</div>
+<script>(()=>{const n=document.getElementById('ek-topnav');if(!n)return;const b=n.querySelector('button');b.addEventListener('click',()=>{const o=n.classList.toggle('open');b.setAttribute('aria-expanded',o?'true':'false');});document.addEventListener('click',e=>{if(!n.contains(e.target)){n.classList.remove('open');b.setAttribute('aria-expanded','false');}});})();</script>`;
 }
 
 function injectApp(html, a) {
