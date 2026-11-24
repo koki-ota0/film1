@@ -93,7 +93,7 @@ function footer(depth = 0) {
 </html>`;
 }
 
-const ICONS = { top4: '▦', tier: '≣', ranking: '①' };
+const ICONS = { top9: '▦', tier: '≣', ranking: '①' };
 function card(a, depth = 0) {
   const icon = ICONS[a.slug] || '✦';
   return `<li><a class="card" href="${esc(appRel(a, depth))}">
@@ -383,5 +383,8 @@ write(P(DIST, 'privacy-policy.html'), privacyPage());
 write(P(DIST, 'sitemap.xml'), sitemapXml());
 write(P(DIST, 'robots.txt'), robotsTxt());
 for (const a of published) write(P(DIST, 'apps', a.slug, 'index.html'), detailPage(a));
+
+// legacy redirect: top4 -> top9
+write(P(DIST, 'app', 'top4', 'index.html'), '<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=../top9/"><link rel="canonical" href="../top9/"><title>Redirecting...</title><a href="../top9/">好きな映画9選へ移動</a>');
 
 console.log(`Built ${published.length} apps -> dist/`);
