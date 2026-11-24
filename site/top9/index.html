@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>好きな映画9選｜EigaKit</title>
+<title>好きな映画9選｜CineCard</title>
 <style>
 :root{--bg:#0b0b0f;--panel:#17171e;--line:#2a2a35;--text:#f2efe8;--muted:#a8a39a;--accent:#e8c468;--accent2:#ff7a59;--sans:"Hiragino Sans","Noto Sans JP","Yu Gothic",system-ui,sans-serif;--serif:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",Georgia,serif}
 *,*::before,*::after{box-sizing:border-box} body{margin:0;background:radial-gradient(900px 500px at 10% -10%,#2a2112,transparent 60%),var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6}
@@ -44,7 +44,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
 <body>
 <div class="wrap">
   <div class="top">
-    <p style="color:var(--accent);font-weight:700;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;margin:0">EigaKit Template</p>
+    <p style="color:var(--accent);font-weight:700;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;margin:0">CineCard Template</p>
     <h1>好きな映画9選</h1>
     <p>あなたの「好き」を9枚で語るポスターをつくろう。画像は端末内で処理され、サーバーには送信されません。</p>
   </div>
@@ -83,7 +83,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
   </div>
 </div>
 
-<script src="../../assets/eigakit-config.js"></script>
+<script src="../../assets/cinecard-config.js"></script>
 <script src="../../assets/movie-search.js"></script>
 <script src="../../assets/themes.js"></script>
 <script>
@@ -96,9 +96,9 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
   const share = document.getElementById('share');
   const W = 1080; let H = 1750;
   const state = Array.from({length:9}, () => ({ title:'', img:null, src:'' }));
-  let theme = (window.EigaKitThemes && window.EigaKitThemes.byId['cinema-dark']) || {id:'cinema-dark',bg:['#1c1912','#0b0b0f','#15121a'],accent:'#e8c468',accent2:'#ff7a59',text:'#f2efe8',muted:'rgba(242,239,232,.62)',frame:'rgba(232,196,104,.22)',fontHead:'Georgia,serif',fontBody:'system-ui,sans-serif'};
-  if (window.EigaKitThemes) {
-    window.EigaKitThemes.mountPicker(document.getElementById('themePicker'), { initial: theme.id, onChange: (t) => { theme = t; render(); } });
+  let theme = (window.CineCardThemes && window.CineCardThemes.byId['cinema-dark']) || {id:'cinema-dark',bg:['#1c1912','#0b0b0f','#15121a'],accent:'#e8c468',accent2:'#ff7a59',text:'#f2efe8',muted:'rgba(242,239,232,.62)',frame:'rgba(232,196,104,.22)',fontHead:'Georgia,serif',fontBody:'system-ui,sans-serif'};
+  if (window.CineCardThemes) {
+    window.CineCardThemes.mountPicker(document.getElementById('themePicker'), { initial: theme.id, onChange: (t) => { theme = t; render(); } });
   }
   let activeSlot = null;
 
@@ -152,13 +152,13 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
   for(let i=0;i<9;i++) makeSlot(i);
 
   async function runSlotSearch() {
-    if (activeSlot == null || !window.EigaKitMovieSearch) return;
+    if (activeSlot == null || !window.CineCardMovieSearch) return;
     const i = activeSlot;
     const q = document.getElementById('slotSearchInput').value.trim();
     const container = document.getElementById('slotSearchResults');
     const status = document.getElementById('slotSearchStatus');
     status.scrollIntoView({behavior:'smooth', block:'nearest'});
-    await window.EigaKitMovieSearch.inlineSearch({
+    await window.CineCardMovieSearch.inlineSearch({
       query: q, container, status,
       onPick: async (movie) => {
         state[i].title = movie.year ? `${movie.title} (${movie.year})` : movie.title;
@@ -307,9 +307,9 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
     ctx.textAlign='center'; ctx.textBaseline='bottom';
     ctx.fillStyle = t.muted;
     ctx.font = `500 24px ${t.fontBody}`;
-    ctx.fillText('made with EigaKit', W/2, H - 44);
+    ctx.fillText('made with CineCard', W/2, H - 44);
 
-    const text = encodeURIComponent(`私の好きな映画9選\n\n${state.map((s,i)=>`${i+1}. ${s.title.trim()||'—'}`).join('\n')}\n\n#好きな映画9選 #EigaKit`);
+    const text = encodeURIComponent(`私の好きな映画9選\n\n${state.map((s,i)=>`${i+1}. ${s.title.trim()||'—'}`).join('\n')}\n\n#好きな映画9選 #CineCard`);
     const url = encodeURIComponent(location.href.replace(/\/app\/top9\/.*$/, '/app/top9/'));
     share.href = `https://x.com/intent/post?text=${text}&url=${url}`;
   }
@@ -317,7 +317,7 @@ canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f
   owner.addEventListener('input', render);
   dl.addEventListener('click', () => {
     const a = document.createElement('a');
-    a.download = 'eigakit-top4.png';
+    a.download = 'cinecard-top9.png';
     a.href = canvas.toDataURL('image/png');
     a.click();
   });

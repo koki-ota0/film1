@@ -180,7 +180,7 @@
           x.strokeStyle=t.frame; x.strokeRect(px,top,cw,ch);
           x.fillStyle=t.muted; x.font='600 9px '+t.fontBody; x.textAlign='center'; x.fillText('映画'+(i+1), px+cw/2, top+ch-8);
         }
-        x.fillStyle=t.muted; x.font='500 8px '+t.fontBody; x.textAlign='center'; x.fillText('made with EigaKit', w/2, h-14);
+        x.fillStyle=t.muted; x.font='500 8px '+t.fontBody; x.textAlign='center'; x.fillText('made with CineCard', w/2, h-14);
       }
       function renderGrid() {
         tabs.forEach(t => t.setAttribute('aria-selected', t.dataset.tab===tab?'true':'false'));
@@ -208,5 +208,5 @@
     return { get: () => byId[current], set: (id) => { if(byId[id]){ current=id; tab=byId[id].group; renderTrigger(); onChange(byId[current]); } } };
   }
 
-  window.EigaKitThemes = { all: allThemes, style: styleThemes, movie: movieThemes, byId, mountPicker };
+  window.CineCardThemes = { all: allThemes, style: styleThemes, movie: movieThemes, byId, mountPicker };
 })();

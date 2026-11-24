@@ -14,7 +14,7 @@
   <circle cx="980" cy="120" r="220" fill="rgba(232,196,104,0.08)"/>
   <circle cx="180" cy="560" r="260" fill="rgba(255,122,89,0.06)"/>
   <rect x="72" y="72" width="1056" height="486" rx="28" fill="none" stroke="rgba(232,196,104,0.22)"/>
-  <text x="96" y="170" font-family="Georgia,'Hiragino Mincho ProN',serif" font-size="34" fill="#e8c468" letter-spacing="4">EIGAKIT</text>
+  <text x="96" y="170" font-family="Georgia,'Hiragino Mincho ProN',serif" font-size="34" fill="#e8c468" letter-spacing="4">CINECARD</text>
   <text x="96" y="290" font-family="Georgia,'Hiragino Mincho ProN',serif" font-size="72" fill="#f2efe8">映画の「好き」を、</text>
   <text x="96" y="370" font-family="Georgia,'Hiragino Mincho ProN',serif" font-size="72" fill="#e8c468">1枚の画像に。</text>
   <text x="96" y="440" font-family="Arial,'Hiragino Sans',sans-serif" font-size="28" fill="#a8a39a">好きな映画4選 ・ ティア表 ・ ランキングカード</text>
