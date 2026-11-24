@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e1a14"/>
+      <stop offset="55%" stop-color="#0b0b0f"/>
+      <stop offset="100%" stop-color="#171320"/>
+    </linearGradient>
+    <linearGradient id="a" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e8c468"/>
+      <stop offset="100%" stop-color="#ff7a59"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#g)"/>
+  <circle cx="980" cy="120" r="220" fill="rgba(232,196,104,0.08)"/>
+  <circle cx="180" cy="560" r="260" fill="rgba(255,122,89,0.06)"/>
+  <rect x="72" y="72" width="1056" height="486" rx="28" fill="none" stroke="rgba(232,196,104,0.22)"/>
+  <text x="96" y="170" font-family="Georgia,'Hiragino Mincho ProN',serif" font-size="34" fill="#e8c468" letter-spacing="4">EIGAKIT</text>
+  <text x="96" y="290" font-family="Georgia,'Hiragino Mincho ProN',serif" font-size="72" fill="#f2efe8">映画の「好き」を、</text>
+  <text x="96" y="370" font-family="Georgia,'Hiragino Mincho ProN',serif" font-size="72" fill="#e8c468">1枚の画像に。</text>
+  <text x="96" y="440" font-family="Arial,'Hiragino Sans',sans-serif" font-size="28" fill="#a8a39a">好きな映画4選 ・ ティア表 ・ ランキングカード</text>
+  <circle cx="1048" cy="470" r="46" fill="none" stroke="url(#a)" stroke-width="6"/>
+  <polygon points="1036,452 1072,470 1036,488" fill="#e8c468"/>
+</svg>

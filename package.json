@@ -1,0 +1,13 @@
+{
+  "name": "film1",
+  "private": true,
+  "version": "0.1.0",
+  "description": "映画好きのための、Xでシェアできるテンプレ作成アプリ集",
+  "scripts": {
+    "build": "node tools/build.js",
+    "check": "node tools/check.js",
+    "new": "node tools/new-app.mjs",
+    "dev": "node tools/dev.js"
+  },
+  "engines": { "node": ">=20" }
+}

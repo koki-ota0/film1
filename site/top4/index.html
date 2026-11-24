@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>好きな映画4選｜EigaKit</title>
+<style>
+:root{--bg:#0b0b0f;--panel:#17171e;--line:#2a2a35;--text:#f2efe8;--muted:#a8a39a;--accent:#e8c468;--accent2:#ff7a59;--sans:"Hiragino Sans","Noto Sans JP","Yu Gothic",system-ui,sans-serif;--serif:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",Georgia,serif}
+*,*::before,*::after{box-sizing:border-box} body{margin:0;background:radial-gradient(900px 500px at 10% -10%,#2a2112,transparent 60%),var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6}
+.wrap{width:min(1100px,calc(100% - 32px));margin:0 auto;padding:28px 0 40px}
+.top h1{font-family:var(--serif);font-size:clamp(1.8rem,5vw,3rem);margin:.2em 0 .2em;line-height:1.2}
+.top p{color:var(--muted);margin:0 0 24px}
+.layout{display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start}
+.panel{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:22px}
+.panel h2{font-size:1rem;margin:0 0 14px;color:#ddd5c8}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.slot{background:#111118;border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden}
+.slot-img{aspect-ratio:2/3;background:linear-gradient(160deg,#242430,#15151c);display:grid;place-items:center;cursor:pointer;position:relative;overflow:hidden}
+.slot-img img{width:100%;height:100%;object-fit:cover;display:block}
+.slot-img .ph{color:#8f887d;font-size:.82rem;text-align:center;padding:16px;line-height:1.5}
+.slot-img .ph strong{display:block;font-size:1.6rem;color:rgba(232,196,104,.7);margin-bottom:6px;font-family:var(--serif)}
+.slot-img input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.slot-body{padding:12px}
+.slot-body label{display:block;font-size:.72rem;color:var(--muted);font-weight:700;margin-bottom:4px}
+.slot-body input[type=text]{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:#0f0f14;color:var(--text);font:inherit;font-size:.95rem}
+.slot-body input[type=text]:focus{outline:2px solid rgba(232,196,104,.45);border-color:rgba(232,196,104,.5)}
+.name-row{margin-bottom:18px}
+.name-row label{display:block;font-size:.78rem;color:var(--muted);font-weight:700;margin-bottom:6px}
+.name-row input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:#0f0f14;color:var(--text);font:inherit}
+.name-row input:focus{outline:2px solid rgba(232,196,104,.45);border-color:rgba(232,196,104,.5)}
+.preview{position:sticky;top:20px}
+.canvas-wrap{background:#111118;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:12px}
+canvas{width:100%;height:auto;display:block;border-radius:8px;background:#0b0b0f}
+.actions{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 16px;border-radius:999px;border:1px solid transparent;font:700 .92rem var(--sans);cursor:pointer;text-decoration:none;transition:transform .15s,opacity .2s}
+.btn:hover{transform:translateY(-1px)} .btn:active{transform:translateY(0)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#f0d78a);color:#1a1408}
+.btn-ghost{background:rgba(255,255,255,.04);color:var(--text);border-color:rgba(255,255,255,.12)}
+.small{font-size:.78rem;color:var(--muted);margin-top:10px;line-height:1.6}
+@media (max-width:900px){.layout{grid-template-columns:1fr}.preview{position:static}}
+@media (max-width:520px){.grid4{gap:10px}.slot-body{padding:10px}.panel{padding:16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <p style="color:var(--accent);font-weight:700;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;margin:0">EigaKit Template</p>
+    <h1>好きな映画4選</h1>
+    <p>あなたの「好き」を4枚で語るポスターをつくろう。画像は端末内で処理され、サーバーには送信されません。</p>
+  </div>
+
+  <div class="layout">
+    <div class="panel">
+      <div class="name-row">
+        <label for="owner">名前・ハンドル（任意）</label>
+        <input id="owner" type="text" maxlength="30" placeholder="例：@your_name / あなたの名前">
+      </div>
+      <h2>4本の映画を選ぶ</h2>
+      <div class="grid4" id="slots"></div>
+    </div>
+
+    <div class="preview">
+      <div class="panel">
+        <h2>プレビュー</h2>
+        <div class="canvas-wrap"><canvas id="c" width="1080" height="1350"></canvas></div>
+        <div class="actions">
+          <button class="btn btn-primary" id="dl" type="button">画像を保存</button>
+          <a class="btn btn-ghost" id="share" href="#" target="_blank" rel="noopener">Xでシェア</a>
+        </div>
+        <p class="small">「Xでシェア」はテキストとリンクを開きます。画像は「画像を保存」してから添付してください。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const slotsEl = document.getElementById('slots');
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const owner = document.getElementById('owner');
+  const dl = document.getElementById('dl');
+  const share = document.getElementById('share');
+  const W = 1080, H = 1350;
+  const state = Array.from({length:4}, () => ({ title:'', img:null, src:'' }));
+
+  function makeSlot(i){
+    const el = document.createElement('div');
+    el.className = 'slot';
+    el.innerHTML = `
+      <div class="slot-img">
+        <div class="ph"><strong>${i+1}</strong>タップして<br>ポスター画像を追加</div>
+        <input type="file" accept="image/*" aria-label="映画${i+1}のポスター画像">
+      </div>
+      <div class="slot-body">
+        <label for="t${i}">映画${i+1}のタイトル</label>
+        <input id="t${i}" type="text" maxlength="40" placeholder="例：千と千尋の神隠し">
+      </div>`;
+    const file = el.querySelector('input[type=file]');
+    const text = el.querySelector('input[type=text]');
+    const imgBox = el.querySelector('.slot-img');
+    file.addEventListener('change', async (e) => {
+      const f = e.target.files && e.target.files[0];
+      if(!f) return;
+      const url = await readAsDataURL(f);
+      const im = await loadImage(url);
+      state[i].img = im;
+      state[i].src = url;
+      imgBox.querySelector('.ph')?.remove();
+      let imgEl = imgBox.querySelector('img');
+      if(!imgEl){ imgEl = document.createElement('img'); imgBox.appendChild(imgEl); }
+      imgEl.src = url;
+      imgEl.alt = state[i].title || `映画${i+1}`;
+      render();
+    });
+    text.addEventListener('input', (e) => { state[i].title = e.target.value; render(); });
+    slotsEl.appendChild(el);
+  }
+  for(let i=0;i<4;i++) makeSlot(i);
+
+  function readAsDataURL(file){
+    return new Promise((res, rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
+  }
+  function loadImage(src){
+    return new Promise((res, rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=src; });
+  }
+
+  function roundRect(x,y,w,h,r){
+    ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+  }
+  function fitText(text, maxW, base, font, min=20){
+    let size = base;
+    ctx.font = `${font} ${size}px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",Georgia,serif`;
+    while(size > min && ctx.measureText(text).width > maxW){ size -= 2; ctx.font = `${font} ${size}px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",Georgia,serif`; }
+    return size;
+  }
+  function wrapTitle(text, maxW, fontSpec, maxLines=2){
+    const chars = [...text];
+    const lines = [];
+    let line = '';
+    for(const ch of chars){
+      const test = line + ch;
+      ctx.font = fontSpec;
+      if(ctx.measureText(test).width > maxW && line){
+        lines.push(line);
+        line = ch;
+        if(lines.length === maxLines-1) break;
+      } else line = test;
+    }
+    if(lines.length < maxLines){
+      const rest = chars.slice(lines.join('').length).join('');
+      lines.push(rest);
+    } else {
+      // truncate last line
+      let last = lines[maxLines-1];
+      while(ctx.measureText(last + '…').width > maxW && last.length) last = last.slice(0,-1);
+      lines[maxLines-1] = last + (chars.slice(lines.slice(0,maxLines-1).join('').length + last.length).length ? '…' : '');
+    }
+    return lines.filter(Boolean);
+  }
+
+  function drawPoster(i, x, y, w, h){
+    const s = state[i];
+    ctx.save();
+    roundRect(x,y,w,h,18); ctx.clip();
+    // bg
+    const g = ctx.createLinearGradient(x,y,x+w,y+h);
+    g.addColorStop(0,'#262633'); g.addColorStop(1,'#14141b');
+    ctx.fillStyle = g; ctx.fillRect(x,y,w,h);
+    if(s.img){
+      // cover
+      const iw=s.img.naturalWidth, ih=s.img.naturalHeight;
+      const r=Math.max(w/iw,h/ih);
+      const nw=iw*r, nh=ih*r;
+      ctx.drawImage(s.img, x+(w-nw)/2, y+(h-nh)/2, nw, nh);
+    } else {
+      ctx.fillStyle = 'rgba(232,196,104,.08)';
+      ctx.fillRect(x,y,w,h);
+      ctx.fillStyle = 'rgba(232,196,104,.55)';
+      ctx.font = '700 72px "Hiragino Mincho ProN","Yu Mincho",Georgia,serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(String(i+1), x+w/2, y+h/2 - 20);
+      ctx.fillStyle = 'rgba(242,239,232,.45)';
+      ctx.font = '500 24px "Hiragino Sans","Noto Sans JP",sans-serif';
+      ctx.fillText('NO POSTER', x+w/2, y+h/2 + 42);
+    }
+    // bottom gradient
+    const bg = ctx.createLinearGradient(x,y+h-180,x,y+h);
+    bg.addColorStop(0,'rgba(0,0,0,0)'); bg.addColorStop(1,'rgba(0,0,0,.72)');
+    ctx.fillStyle = bg; ctx.fillRect(x,y+h-180,w,180);
+    ctx.restore();
+
+    // border
+    ctx.save(); roundRect(x,y,w,h,18); ctx.strokeStyle='rgba(255,255,255,.10)'; ctx.lineWidth=2; ctx.stroke(); ctx.restore();
+
+    // title
+    const title = s.title.trim() || `映画 ${i+1}`;
+    ctx.save();
+    ctx.fillStyle = '#f5f1e8';
+    ctx.textAlign='center'; ctx.textBaseline='bottom';
+    const fontSpec = '700 34px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",Georgia,serif';
+    const lines = wrapTitle(title, w-44, fontSpec, 2);
+    const lh = 42;
+    lines.forEach((ln, li) => {
+      const yy = y+h - 24 - (lines.length-1-li)*lh;
+      ctx.font = fontSpec;
+      ctx.fillText(ln, x+w/2, yy);
+    });
+    ctx.restore();
+  }
+
+  function render(){
+    ctx.clearRect(0,0,W,H);
+    // bg
+    const bg = ctx.createLinearGradient(0,0,W,H);
+    bg.addColorStop(0,'#1c1912'); bg.addColorStop(.45,'#0b0b0f'); bg.addColorStop(1,'#15121a');
+    ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+    // subtle glow
+    const rg1 = ctx.createRadialGradient(180,120,10,180,120,420); rg1.addColorStop(0,'rgba(232,196,104,.12)'); rg1.addColorStop(1,'rgba(232,196,104,0)');
+    ctx.fillStyle=rg1; ctx.fillRect(0,0,W,H);
+    const rg2 = ctx.createRadialGradient(920,1180,10,920,1180,480); rg2.addColorStop(0,'rgba(255,122,89,.10)'); rg2.addColorStop(1,'rgba(255,122,89,0)');
+    ctx.fillStyle=rg2; ctx.fillRect(0,0,W,H);
+
+    // header
+    ctx.fillStyle = '#e8c468';
+    ctx.font = '700 24px "Hiragino Sans","Noto Sans JP",sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText('MY FAVORITE 4 FILMS', W/2, 64);
+
+    ctx.fillStyle = '#f2efe8';
+    ctx.font = '700 68px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",Georgia,serif';
+    ctx.fillText('好きな映画4選', W/2, 106);
+
+    const name = owner.value.trim();
+    if(name){
+      ctx.fillStyle = 'rgba(242,239,232,.72)';
+      ctx.font = '500 30px "Hiragino Sans","Noto Sans JP",sans-serif';
+      ctx.fillText(name, W/2, 190);
+    }
+
+    // grid
+    const pad = 64, gap = 28, top = name ? 250 : 230;
+    const cellW = (W - pad*2 - gap) / 2;
+    const cellH = Math.round(cellW * 1.48);
+    for(let i=0;i<4;i++){
+      const col = i%2, row = Math.floor(i/2);
+      const x = pad + col*(cellW+gap);
+      const y = top + row*(cellH+gap);
+      drawPoster(i, x, y, cellW, cellH);
+    }
+
+    // footer
+    ctx.textAlign='center'; ctx.textBaseline='bottom';
+    ctx.fillStyle = 'rgba(242,239,232,.42)';
+    ctx.font = '500 24px "Hiragino Sans","Noto Sans JP",sans-serif';
+    ctx.fillText('made with EigaKit', W/2, H - 44);
+
+    // share link
+    const text = encodeURIComponent(`私の好きな映画4選\n\n${state.map((s,i)=>`${i+1}. ${s.title.trim()||'—'}`).join('\n')}\n\n#好きな映画4選 #EigaKit`);
+    const url = encodeURIComponent(location.href.replace(/\/app\/top4\/.*$/, '/app/top4/'));
+    share.href = `https://x.com/intent/post?text=${text}&url=${url}`;
+  }
+
+  owner.addEventListener('input', render);
+  dl.addEventListener('click', () => {
+    const a = document.createElement('a');
+    a.download = 'eigakit-top4.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
