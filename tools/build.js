@@ -19,6 +19,7 @@ const data = JSON.parse(fs.readFileSync(P(ROOT, 'apps.json'), 'utf8'));
 const site = data.site || {};
 const apps = (data.apps || []).slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 const published = apps.filter((a) => a.status === 'published');
+const listed = published.filter((a) => !a.hidden);
 
 const BASE = (site.baseUrl || '/').replace(/\/?$/, '/');
 const esc = (s = '') => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -93,9 +94,13 @@ function footer(depth = 0) {
 </html>`;
 }
 
-const ICONS = { top9: '▦', tier: '≣', ranking: '①' };
+const ICONS = {
+  top9: `<svg width="54" height="54" viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="5" width="12" height="18" rx="3" fill="rgba(232,196,104,.95)"/><rect x="21" y="5" width="12" height="18" rx="3" fill="rgba(232,196,104,.55)"/><rect x="37" y="5" width="12" height="18" rx="3" fill="rgba(232,196,104,.35)"/><rect x="5" y="27" width="12" height="18" rx="3" fill="rgba(232,196,104,.35)"/><rect x="21" y="27" width="12" height="18" rx="3" fill="rgba(232,196,104,.2)"/><rect x="37" y="27" width="12" height="18" rx="3" fill="rgba(232,196,104,.2)"/></svg>`,
+  tier: `<svg width="54" height="54" viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="8" width="42" height="8" rx="2" fill="rgba(232,196,104,.85)"/><rect x="6" y="20" width="42" height="8" rx="2" fill="rgba(232,196,104,.45)"/><rect x="6" y="32" width="42" height="8" rx="2" fill="rgba(232,196,104,.25)"/></svg>`,
+  ranking: `<svg width="54" height="54" viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M27 8l4.9 9.9L43 19.5l-8 7.8 1.9 11-9.9-5.2-9.9 5.2 1.9-11-8-7.8 11.1-1.6L27 8z" fill="rgba(232,196,104,.95)"/><rect x="11" y="41" width="32" height="4" rx="2" fill="rgba(232,196,104,.35)"/></svg>`,
+};
 function card(a, depth = 0) {
-  const icon = ICONS[a.slug] || '✦';
+  const icon = ICONS[a.slug] || '<span style="font-size:2rem">✦</span>';
   return `<li><a class="card" href="${esc(appRel(a, depth))}">
   <div class="card-visual"><span class="tag">無料ツール</span><div class="icon" aria-hidden="true">${icon}</div></div>
   <div class="card-body">
@@ -133,7 +138,7 @@ ${header('')}
         <p class="sub">作って、保存して、Xに投稿。どれも無料・登録不要です。</p>
       </div>
     </div>
-    <ul class="grid">${published.map((a) => card(a, 0)).join('\n')}</ul>
+    <ul class="grid">${listed.map((a) => card(a, 0)).join('\n')}</ul>
   </div></section>
 
   <section class="section"><div class="wrap">
@@ -153,7 +158,7 @@ ${footer(0)}`;
 function appsPage() {
   return `${head({
     title: `ツール一覧｜${site.name || 'CineCard'}`,
-    desc: `${site.name || 'CineCard'} の映画テンプレ作成ツール一覧。好きな映画4選・ティア表・ランキングカードを無料で作成できます。`,
+    desc: `${site.name || 'CineCard'} の映画テンプレ作成ツール一覧。好きな映画9選・ランキングカードを無料で作成できます。`,
     canonical: abs('apps/'),
     image: abs('assets/ogp-fallback.svg'),
     depth: 1
@@ -167,7 +172,7 @@ ${header('apps', 1)}
     <p class="catch">映画の「好き」をシェアするためのテンプレートを集めています。すべて無料・登録不要。</p>
   </section>
   <section class="section">
-    <ul class="grid">${published.map((a) => card(a, 1)).join('\n')}</ul>
+    <ul class="grid">${listed.map((a) => card(a, 1)).join('\n')}</ul>
   </section>
 </main>
 ${footer(1)}`;
@@ -284,7 +289,7 @@ ${footer(0)}`;
 
 function sitemapXml() {
   const urls = [abs(''), abs('apps/'), abs('about.html'), abs('privacy-policy.html')];
-  for (const a of published) { urls.push(detailUrl(a)); urls.push(appUrl(a)); }
+  for (const a of listed) { urls.push(detailUrl(a)); urls.push(appUrl(a)); }
   const items = urls.map((u) => `  <url><loc>${esc(u)}</loc></url>`).join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${items}\n</urlset>\n`;
 }

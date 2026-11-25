@@ -115,7 +115,7 @@
     ensureFonts();
     const onChange = opts.onChange || (() => {});
     let current = byId[opts.initial] ? opts.initial : allThemes[0].id;
-    let tab = byId[current].group || 'style';
+    let tab = 'style';
     container.classList.add('ek-theme-box');
 
     function renderTrigger() {
@@ -137,18 +137,17 @@
     }
 
     function openModal() {
-      tab = byId[current].group || tab;
+      tab = 'style';
       const backdrop = document.createElement('div');
       backdrop.className = 'ek-theme-backdrop';
       backdrop.innerHTML = `
         <div class="ek-theme-modal" role="dialog" aria-modal="true" aria-label="デザインを選ぶ">
           <div class="ek-theme-modal-head">
-            <div><h3>デザインを選ぶ</h3><p>書き出し画像の雰囲気を選べます。${styleThemes.length}スタイル + ${movieThemes.length}映画風。</p></div>
+            <div><h3>デザインを選ぶ</h3><p>書き出し画像の雰囲気を選べます。${styleThemes.length}種類のスタイルから選択できます。</p></div>
             <button type="button" class="ek-theme-close" aria-label="閉じる">×</button>
           </div>
-          <div class="ek-theme-tabs">
-            <button type="button" class="ek-theme-tab" data-tab="style" aria-selected="${tab==='style'}">スタイル (${styleThemes.length})</button>
-            <button type="button" class="ek-theme-tab" data-tab="movie" aria-selected="${tab==='movie'}">映画風 (${movieThemes.length})</button>
+          <div class="ek-theme-tabs" style="display:none">
+            <button type="button" class="ek-theme-tab" data-tab="style" aria-selected="true">スタイル (${styleThemes.length})</button>
           </div>
           <div class="ek-theme-grid"></div>
         </div>`;
@@ -199,13 +198,13 @@
           grid.appendChild(b);
         });
       }
-      tabs.forEach(t => t.onclick = () => { tab=t.dataset.tab; renderGrid(); });
+        tabs.forEach(t => t.onclick = () => { tab='style'; renderGrid(); });
       renderGrid();
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{ if(backdrop.isConnected) renderGrid(); });
     }
 
     renderTrigger();
-    return { get: () => byId[current], set: (id) => { if(byId[id]){ current=id; tab=byId[id].group; renderTrigger(); onChange(byId[current]); } } };
+    return { get: () => byId[current], set: (id) => { if(byId[id]){ current=id; tab='style'; renderTrigger(); onChange(byId[current]); } } };
   }
 
   window.CineCardThemes = { all: allThemes, style: styleThemes, movie: movieThemes, byId, mountPicker };
